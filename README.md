@@ -1,2 +1,2 @@
 # gold-code-base
-C++ math classes
+C++ math classes and python wrappers for them
