@@ -2,11 +2,22 @@ import os
 
 directories = [ x[0] for x in os.walk('.')]
 directories = [ x for x in directories if x[:3] != './.' ]
-directories = [ x for x in directories if x != '.' ]
 directories.remove('./bin')
+directories.remove('./lib')
+directories = [ x.split('/')[1:] for x in directories if x != '.' ]
 
-include = [ x.replace('.','Gold') for x in directories ]
+lib_roots = list(set([ x[0] for x in directories ]))
 
-env = Environment(CPPPATH = include)
-for d in directories:
-    env.Object(Glob(d + '/' + '*.cpp'))
+env = Environment(
+    CPPPATH = os.environ['GOLD_HOME'],
+    CXXFLAGS = "-std=c++0x"
+)
+
+for root in lib_roots:
+    local_dirs = [ '/'.join(x) for x in directories if x[0] == root]
+    lib_list = env.SharedLibrary('lib/' + root, [Glob(d + "/*.cpp") for d in local_dirs] )
+libs = lib_roots
+print libs
+
+for program in Glob('bin/*.cxx'):
+    env.Program(program, LIBS=libs, LIBPATH='./lib')
