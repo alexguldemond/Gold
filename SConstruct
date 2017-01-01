@@ -3,7 +3,7 @@ import os
 directories = [ x[0] for x in os.walk('.')]
 directories = [ x for x in directories if x[:3] != './.' ]
 directories.remove('./bin')
-directories.remove('./lib')
+if './lib' in directories: directories.remove('./lib')
 directories = [ x.split('/')[1:] for x in directories if x != '.' ]
 
 lib_roots = list(set([ x[0] for x in directories ]))
@@ -20,3 +20,4 @@ libs = lib_roots
 
 for program in Glob('bin/*.cxx'):
     env.Program(program, LIBS=libs, LIBPATH='./lib')
+
