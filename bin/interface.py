@@ -10,9 +10,9 @@ import sys
 def getPublicMethods(cpp_class, header_file) :
     try :
         header = CppHeaderParser.CppHeader(header_file)
-    except CppHeaderParser.CppParserError as e:
+    except CppHeaderParser.CppParseError as e:
         print >> sys.stderr, e
-        return 1
+        sys.exit(1)
         
     class_tree = header.classes[cpp_class]
     public_methods = []
@@ -53,7 +53,9 @@ def getArgString(params) :
     param_string = ', '.join([ param['name'] for param in params] )
     return param_string
 
-def printImports(handle) :
+def printImports(py_class, handle) :
+    handle.write('# distutils: language = c++\n')
+    handle.write('# distutils: sources = Rectangle.cpp\n\n')
     for container in ['string', 'vector', 'map']:
         handle.write("from libcpp.%s import %s\n" % (container, container))
         
@@ -62,8 +64,10 @@ def printCppClass(cpp_class, py_class, public_methods, header_file, namespace, h
     handle.write('\tcdef cppclass %s :\n' % (cpp_class) ) 
 
     for method in public_methods:
+        if method["destructor"] :
+            continue
         exception_clause = ' except +' if method["constructor"] else ''
-        if method["constructor"] or method["destructor"] :
+        if method["constructor"]  :
             return_type = ''
         else :
             return_type = method['return_type'] + ' '
@@ -88,11 +92,26 @@ def printWrapper( cpp_class, py_class, public_methods, handle) :
 
     constructors = [ m for m in public_methods if m['constructor']]
 
+    for constructor in constructors :
+        parameters = 'self'
+        cpp_parameters = ''
+        print constructor.keys()
+        if constructor['parameters'] : 
+            cpp_parameters = getParamString(constructor['parameters'])
+        if cpp_parameters: 
+            parameters += ', ' + cpp_parameters
+            cpp_parameters = getArgString(constructor['parameters'])
+        handle.write('\tdef __cinit__(%s):\n' % (
+            parameters
+        ))
+        handle.write('\t\tself.ptr = new %s(%s)\n' % (
+            cpp_class,
+            cpp_parameters
+        ))
+
     for method in public_methods:
         if method['destructor'] or method['constructor']:
             continue
-        else:
-            name = method['name']
         
         parameters = 'self'
         cpp_parameters = ''
@@ -103,10 +122,11 @@ def printWrapper( cpp_class, py_class, public_methods, handle) :
             cpp_parameters = getArgString(method['parameters'])
             
         handle.write('\tdef %s(%s):\n' % (
-            name,
+            method['name'],
             parameters
         ))
-        handle.write('\t\treturn self.ptr.%s(%s)\n' % (
+        handle.write('\t\t%sself.ptr.%s(%s)\n' % (
+            'return ' if method['return_type'] != 'void' else '',
             method["name"],
             cpp_parameters
         ))            
@@ -132,10 +152,10 @@ def main() :
  
     if not os.path.isfile(lib_file) :
         print >> sys.stderr, 'Library ' + lib_name + ' not found'
-        return 1
+        sys.exit(1)
 
     pyx_file_handle = open(py_class + '.pyx', 'w')
-    printImports(pyx_file_handle)
+    printImports(py_class, pyx_file_handle)
     printCppClass(
         cpp_class = cpp_class, 
         py_class = py_class, 
