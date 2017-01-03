@@ -1,9 +1,6 @@
 #include "rectangle.hpp"
 
 namespace Gold {
-
-  rectangle::rectangle() { }
-
   rectangle::rectangle(int X0, int Y0, int X1, int Y1) {
     x0 = X0;
     y0 = Y0;
@@ -17,9 +14,9 @@ namespace Gold {
     return (x1 - x0) * (y1 - y0);
   }
 
-  void rectangle::getSize(int *width, int *height) {
-    (*width) = x1 - x0;
-    (*height) = y1 - y0;
+  void rectangle::getSize(int& width, int& height) {
+    width = x1 - x0;
+    height = y1 - y0;
   }
 
   void rectangle::move(int dx, int dy) {

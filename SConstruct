@@ -4,6 +4,8 @@ directories = [ x[0] for x in os.walk('.')]
 directories = [ x for x in directories if x[:3] != './.' ]
 directories.remove('./bin')
 if './lib' in directories: directories.remove('./lib')
+if './html' in directories: directories.remove('./html')
+if './latex' in directories: directories.remove('./latex')
 directories = [ x.split('/')[1:] for x in directories if x != '.' ]
 
 lib_roots = list(set([ x[0] for x in directories ]))
