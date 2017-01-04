@@ -55,6 +55,6 @@ namespace Gold {
      *
      *Return value: void
      *************************************************/
-    void move(int dx, int dy=0);
+    void move(const int dx, int dy=0);
   };
 }
