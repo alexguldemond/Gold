@@ -185,15 +185,18 @@ def main() :
 
 from distutils.core import setup
 from Cython.Build import cythonize
+import shutil
 
 setup(
-    ext_package = "Gold",
     ext_modules = cythonize('%s')
 )
 
-open("Gold/__init__.py", "w+")
-
-""" % (pyx_file_name) )
+shutil.move('%s', '%s')
+""" % (
+    pyx_file_name,
+    directory + '/' + py_class + '.so',
+    gold_home + '/Gold/python/Gold'
+) )
 
 if __name__ == "__main__" :
     main()
