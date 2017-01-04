@@ -22,7 +22,6 @@ def getPublicMethods(cpp_class, header_file) :
             'name': t['name'], 
             'default' : t['defaultValue'] if 'defaultValue' in t.keys() else '' 
         } for t in method["parameters"]] 
-
         public_methods.append( {
             'name': method["name"], 
             'parameters' : params, 
@@ -53,11 +52,12 @@ def getArgString(params) :
     param_string = ', '.join([ param['name'] for param in params] )
     return param_string
 
-def printImports(py_class, handle) :
+def printImports(cpp_class, lib_home, cpp_class_file, handle) :
     handle.write('# distutils: language = c++\n')
-    handle.write('# distutils: sources = Rectangle.cpp\n\n')
+    handle.write('# distutils: libraries = %s\n' % (cpp_class) )
+    handle.write('# distutils: library_dirs = %s\n\n' % (lib_home ) )
     for container in ['string', 'vector', 'map']:
-        handle.write("from libcpp.%s import %s\n" % (container, container))
+        handle.write("from libcpp.%s cimport %s\n" % (container, container))
         
 def printCppClass(cpp_class, py_class, public_methods, header_file, namespace, handle) :
     handle.write('\ncdef extern from "%s" namespace "%s" :\n' % ( header_file, '::'.join(namespace) ) )
@@ -95,7 +95,6 @@ def printWrapper( cpp_class, py_class, public_methods, handle) :
     for constructor in constructors :
         parameters = 'self'
         cpp_parameters = ''
-        print constructor.keys()
         if constructor['parameters'] : 
             cpp_parameters = getParamString(constructor['parameters'])
         if cpp_parameters: 
@@ -150,12 +149,24 @@ def main() :
     py_class = cpp_class.title()
     public_methods = getPublicMethods(cpp_class, header_file)
  
-    if not os.path.isfile(lib_file) :
-        print >> sys.stderr, 'Library ' + lib_name + ' not found'
-        sys.exit(1)
-
-    pyx_file_handle = open(py_class + '.pyx', 'w')
-    printImports(py_class, pyx_file_handle)
+    directory = gold_home + '/' + "/".join(namespace) + '/' + cpp_class +'/python/'
+    pyx_file_name = directory + py_class + '.pyx'
+    setup_file_name = directory + '/setup.py'
+    
+    if not os.path.exists(os.path.dirname(pyx_file_name)):
+        try:
+            os.makedirs(os.path.dirname(pyx_file_name))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+    pyx_file_handle = open(pyx_file_name, 'w')
+    setup_file_handle = open(setup_file_name, 'w')
+    printImports(
+        cpp_class = cpp_class,
+        lib_home = gold_home + '/Gold/lib/', 
+        cpp_class_file = gold_home + '/' + '/'.join(namespace) + '/' + cpp_class + '/' + cpp_class + '.cpp', 
+        handle = pyx_file_handle
+    )
     printCppClass(
         cpp_class = cpp_class, 
         py_class = py_class, 
@@ -170,6 +181,19 @@ def main() :
         public_methods = public_methods,
         handle = pyx_file_handle,
     )
+    setup_file_handle.write("""#!/usr/bin/python                        
+
+from distutils.core import setup
+from Cython.Build import cythonize
+
+setup(
+    ext_package = "Gold",
+    ext_modules = cythonize('%s')
+)
+
+open("Gold/__init__.py", "w+")
+
+""" % (pyx_file_name) )
 
 if __name__ == "__main__" :
     main()
