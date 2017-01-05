@@ -145,11 +145,11 @@ def main() :
     lib_name = cpp_class if len(namespace) <= 1 else namespace[1]
     lib_name = 'lib' + lib_name + '.so'
     lib_file = gold_home + '/Gold/lib/' + lib_name
-    header_file = gold_home + '/'.join(namespace) + '/' + cpp_class + '/' + cpp_class + '.hpp'
+    header_file = gold_home + '/Gold/cplusplus/' + '/'.join(namespace) + '/' + cpp_class + '/' + cpp_class + '.hpp'
     py_class = cpp_class.title()
     public_methods = getPublicMethods(cpp_class, header_file)
  
-    directory = gold_home + '/' + "/".join(namespace) + '/' + cpp_class +'/python/'
+    directory = gold_home + '/Gold/cplusplus/' + '/' + "/".join(namespace) + '/' + cpp_class +'/python/'
     pyx_file_name = directory + py_class + '.pyx'
     setup_file_name = directory + '/setup.py'
     
@@ -164,7 +164,7 @@ def main() :
     printImports(
         cpp_class = cpp_class,
         lib_home = gold_home + '/Gold/lib/', 
-        cpp_class_file = gold_home + '/' + '/'.join(namespace) + '/' + cpp_class + '/' + cpp_class + '.cpp', 
+        cpp_class_file = gold_home + '/Gold/cplusplus/' + '/' + '/'.join(namespace) + '/' + cpp_class + '/' + cpp_class + '.cpp', 
         handle = pyx_file_handle
     )
     printCppClass(
