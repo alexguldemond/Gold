@@ -5,12 +5,27 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace Gold {
     namespace math {
 	namespace utils {
 	    
+	    int quotient(int a, int b);
+		
+	    int remainder(int a, int b);
+	    
+	    bool divides(int a, int b);
+
+	    int greatest_common_divisor(int a, int b);
+	    
+	    bool are_relatively_prime(int a, int b);
+
+	    int lowest_common_multiple(int a, int b);
+
+	    std::pair<int, int> simplify_rational_number(int num, int den);
+
 	    struct node {
 		std::string token;
 		std::vector<std::shared_ptr<node> > children;
@@ -24,6 +39,11 @@ namespace Gold {
 	    * a number.
 	    **************************************/
 	    bool is_char_num(char ch);
+
+	    /**********************************//**
+	    * Determines if a number is an integer
+	    **************************************/
+	    bool is_string_integer(const std::string& s);
 
 	    /**********************************//**
      	    * Determines if a given string is
@@ -174,35 +194,78 @@ namespace Gold {
 	    /*****************************************************************************************//**
 	    * Mathematically break the string using the given operation as the delimter. a+b+3*c turns into
 	    * a, b, 3*x when using addition. This only works when the operation passed in is the lowest priority
-	    * operation, which can be found with find_lowest_priority
+	    * operation, which can be found with find_lowest_priority. Acceptable values for operation are +, -,
+	    * * and /.
 	    *
 	    * str       => The string to split.
 	    * operation => The operation to break the string with.
 	    * vector    => Where to store the results.
+	    * invert    => Whether or not to invert the results.
 	    *
-	    * Return value: A vector of strings
 	    *********************************************************************************************/           
-	    void break_string(std::string str, const std::string& , std::vector<std::string>& vector);
+	    void break_string(std::string str, const std::string& , std::vector<std::string>& vector, bool invert = false);
 
 	    /*****************************************************************************************//**
 	    * Determines if the given node is a leaf.
 	    *
 	    * node  => The node to test.
-	    *
-	    * Return value: A vector of strings
 	    *********************************************************************************************/        
 	    bool is_leaf(node_ptr node);
+
+	    /*****************************************************************************************//**
+	    * Return the main operation of the node.
+	    *
+	    * node  => The node to test.
+	    *********************************************************************************************/        
+	    std::string kind(node_ptr node);
+
+	    /*****************************************************************************************//**
+	    * Uses a given node to return a hash value.
+	    *
+	    * node  => The node to hash.
+	    *********************************************************************************************/
+	    double node_hash(node_ptr node);
 	    
+	    /*****************************************************************************************//**
+	    * Determines the order of the given nodes.
+	    *
+	    * left  => The node to test.
+	    * right => The other node to test. 
+	    *
+	    * Return value: The order.
+	    *********************************************************************************************/        
+	    bool node_compare(node_ptr left, node_ptr right);
+
 	    /*****************************************************************************************//**
 	    * Loads the given expression into a tree with root being the head of the tree.
 	    *
 	    * string => The string to push into the tree.\n
-	    * root   => The root of the tree.\n 
-	    *
-	    * Return value: A vector of strings
+	    * root   => The root of the tree.\n
 	    *********************************************************************************************/
 	    void load_tree(std::string string, node_ptr root);
-	    
+
+	    /*****************************************************************************************//**
+	    * Simplifies the tree as much as possible.
+	    *
+	    * root   => The root of the tree.\n
+	    *********************************************************************************************/	    
+	    void simplify_tree(node_ptr root);
+
+	    void simplify_power(node_ptr root);
+
+	    void simplify_integer_power(node_ptr root);
+
+	    void simplify_product(node_ptr root);
+
+	    void simplify_sum(node_ptr root);
+
+	    /*****************************************************************************************//**
+	    * Changes the way inversions are done. (0-a) becomes (-1)*a and 1/b becomes b^(-1).
+	    *
+	    * root   => The root of the tree.\n
+	    *********************************************************************************************/	    
+	    void change_inverse_method(node_ptr root);
+
 	    /*****************************************************************************************//**
 	    * Change the variables in the tree.
 	    *

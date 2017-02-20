@@ -16,10 +16,8 @@ void print_tree_pre_order(node_ptr node) {
 }
 
 int main() {
-
   std::string good("-12345.7");
   std::string bad("dfgjdgh");
-
   if (is_string_num(good) && !is_string_num(bad)) {
     std::cout << "is_string_num success\n";
   } else {
@@ -158,7 +156,7 @@ int main() {
   }
 
   std::cerr << "\n\n===========Node Tests==============\n\n";
-
+  node_ptr tree = std::make_shared<node>();
   node_ptr good_node = std::make_shared<node>();
   node_ptr bad_node = std::make_shared<node>();
   bad_node->children.push_back(good_node);
@@ -170,10 +168,13 @@ int main() {
     std::cerr << good_node <<  " Should be 1: " << is_leaf(good_node) << "\n";
   }
 
-  node_ptr tree = std::make_shared<node>();
-  load_tree("x^2+3*x+4", tree);
-  std::cout << "x^2+3*x+4" << "\n";
-  print_tree_pre_order(tree);
+  try {
+      load_tree("x^2+3*x+4", tree);
+      std::cout << "x^2+3*x+4" << "\n";
+      print_tree_pre_order(tree);
+  } catch (std::string& e) {
+      std::cerr << e << "\n";
+  }
   std::cout << "\n";
 
   std::cout << "Testing 0, should be 4: " << evaluate(tree, {{"x",0}}) << "\n";
@@ -237,5 +238,47 @@ int main() {
   } catch (const std::string& e) {
       std::cerr << "Exception thrown: " <<e << "\n";
   }
+ 
+  tree.reset(new node);
+  load_tree("a/(b/c)/d", tree);
+  change_inverse_method(tree);
+  try {
+      std::cout << "Testing a/(b/c)/d: " << build_string_from_tree(tree) << "\n";
+  } catch (const std::string& e) {
+      std::cerr << "Exception thrown: " <<e << "\n";
+  }
+
+  tree.reset(new node);
+  load_tree("a-(b-c)-d", tree);
+  change_inverse_method(tree);
+  try {
+      std::cout << "Testing a-(b-c)-d: " << build_string_from_tree(tree) << "\n";
+  } catch (const std::string& e) {
+      std::cerr << "Exception thrown: " <<e << "\n";
+  }
+
+  tree.reset(new node);
+  load_tree("5+4+3+2+1+(c*b*a)", tree);
+  try {
+      std::cout << "Testing 5+4+3+2+1+c*b*a: " << node_hash(tree) << "\n";
+  } catch (const std::string& e) {
+      std::cerr << "Exception thrown: " <<e << "\n";
+  }
+
+  tree.reset(new node);
+  load_tree("1/2", tree);
+  std::cout << build_string_from_tree(tree) << "\n";
+  change_inverse_method(tree);
+  std::cout << build_string_from_tree(tree) << "\n";
+  
+  std::cout << "\n=====================================\n\n";
+  
+  std::cout << "Quotient 5, 2 = 2: " << quotient(5,2) << "\n";
+  std::cout << "Remainder 6, 4 = 2: " << remainder(6,4) << "\n";
+  std::cout << "3 divides 6? " << divides(3,6) << "\n";
+  std::cout << "GCD(1413,213) = 3 " << greatest_common_divisor(1413,213) << "\n";
+  auto frac = simplify_rational_number(15,10);
+  std::cout << "15/10 = 3/2: " << frac.first << "/" << frac.second << "\n";
+
 }
   

@@ -359,7 +359,7 @@ namespace Gold {
 	  }
 	}
 	return true;
-    
+
       }
     }
 

@@ -10,9 +10,54 @@ namespace Gold {
     namespace math {
 	namespace utils {
       
+	    int quotient(int a, int b) {
+		return a / b;
+	    }
+
+	    int remainder(int a, int b) {
+		return a % b;
+	    }
+
+	    bool divides(int a, int b) {
+		return remainder(b,a) == 0;
+	    }
+
+	    int greatest_common_divisor(int a, int b) {
+		int r = 0;
+		while ( b != 0 ) {
+		    r = remainder(a,b);
+		    a = b;
+		    b = r;
+		}
+		return abs(a);
+	    }
+
+	    bool are_relatively_prime(int a, int b) {
+		return greatest_common_divisor(a,b) == 1;
+	    }
+
+	    int least_common_multiple(int a, int b) {
+		return (a * b)/greatest_common_divisor(a,b);
+	    }
+
+	    std::pair<int, int> simplify_rational_number(int num, int den) {
+		int gcd = greatest_common_divisor(num, den);
+		return { num / gcd, den / gcd };
+	    }
+
 	    bool is_char_num(char ch) {
 		return (ch >= '0' && ch <= '9');
 	    }
+
+	    bool is_string_integer(const std::string& s) {
+		if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false ;
+
+		char * p ;
+		strtol(s.c_str(), &p, 10) ;                                                         
+
+		return (*p == 0) ;
+	    }
+
 
 	    bool is_string_num(const std::string& str) {
 		if (str == "") {
@@ -300,29 +345,86 @@ namespace Gold {
 		return args;
 	    }
    
-	    void break_string( std::string str, const std::string& operation, std::vector<std::string>& vector) {
+	    void break_string( std::string str, const std::string& operation, std::vector<std::string>& vector, bool invert) {
+		if (operation != "+" && operation != "-" &&
+		    operation != "*" && operation != "/") {
+		    throw operation + " can't be used to break the string";
+		}
+		std::string real_operation = operation;
+		if (operation == "/") {
+			real_operation = "*";
+		}
+		if (operation == "-") {
+		    real_operation = "+";
+		}
+		std::string inverse_operation = real_operation == "+" ? "-" : "/";
+		std::string safe_beginning = real_operation == "+" ? "0" : "1";
 		str = remove_enclosing_parens(str);
 		int index = find_lowest_priority(str);
+		bool str_is_inverted = (str.substr(0,2) == safe_beginning + inverse_operation && index == 1);
+	        
+#ifdef DEBUG
+		std::cout << "Str = " << str << "\n";
+		std::cout << "Operation = " << operation << "\n";
+		std::cout << "Invert = " << invert << "\n";
+		std::cout << "real operation = " << real_operation << "\n";
+		std::cout << "safe beginning = " << safe_beginning << "\n";
+		std::cout << "Is string inverted = " << str_is_inverted << "\n";
+#endif
+		
 		if (index < 0) {
+		    if (invert) {
+			std::string temp = safe_beginning;
+			append_with_parens(temp, str, inverse_operation, true);
+			str = temp;
+		    }
+#ifdef DEBUG
+		    std::cout << "Pushing " << str << "\n"; 
+		    std::cout << "\n\n";
+#endif
 		    vector.push_back(str);
 		    return;
 		}
 		
+		if (str_is_inverted) {
+		    if (invert) {
+			std::string temp = safe_beginning;
+			str = remove_enclosing_parens( str.substr(2, str.size()-2) );
+			str = temp;
+		    }
+#ifdef DEBUG
+		    std::cout << "Pushing " << str << "\n"; 
+		    std::cout << "\n\n";
+#endif
+		    vector.push_back(str);
+		    return;
+		}
+
 		std::string new_operation;
 		std::stringstream stream;
 		stream << str[index];
 		stream >> new_operation;
 		
-		if ( new_operation != operation) {
+		if ( new_operation != operation && new_operation != inverse_operation) {
+		    if (invert) {
+		        std::string temp = safe_beginning;
+			append_with_parens(temp, str, inverse_operation, true);
+			str = temp;
+		    }
+#ifdef DEBUG
+		    std::cout << "Pushing " << str << "\n"; 
+		    std::cout << "\n\n";
+#endif
 		    vector.push_back(str);
 		    return;
 		}
 		
-		std::string substr1(str.substr(0,index));
-		std::string substr2(str.substr(index+1,str.size()-index));
+		std::string substr1(remove_enclosing_parens(str.substr(0,index)));
 		
-		break_string(substr1, operation, vector);
-		break_string(substr2, operation, vector);
+		std::string substr2(remove_enclosing_parens(str.substr(index+1,str.size()-index)));
+		
+		break_string(substr1, operation, vector, invert);
+		break_string(substr2, operation, vector, (operation == inverse_operation) ? !invert : invert);
 	    }
 
 	    bool is_leaf(node_ptr node) {
@@ -333,15 +435,75 @@ namespace Gold {
 		return false;
 	    }
 
+	    double node_hash(node_ptr node) {
+		if (!node) {
+		    return -2.0;
+		}
+		std::string token = node->token;
+		if (is_string_num(token)) {
+		    double num = atof(token.c_str());
+		    return (num > 0) ? num / (1 + num) : num / (1 - num);
+		}
+		if (is_leaf(node)) {
+		    double num = 1.0;
+		    for (auto iter = token.begin(); iter != token.end(); iter++) {
+			num += *iter;
+		    }
+		    return (num > 0) ? num / (1 + num) : num / (1 - num);
+		}
+		if (token != "+" && token != "-" && token != "*" && token != "/" && token != "^") {
+		    return 2.0;
+		}
+		double num = 3.0;
+		std::vector<std::string> ops = { "+", "-", "*", "/", "^" };
+		for (unsigned int i = 0; i < ops.size(); i++) {
+		    if (token == ops[i]) {
+			return num + i;
+		    }
+		}
+		return 8.0;
+	    }
+	    
+	    std::string kind(node_ptr root) {
+		if (!root || is_leaf(root)) {
+		    return "";
+		}
+		std::string token = root->token;
+		if (token == "*" && root->children.size() == 2) {
+		    bool isDivision = false;
+		    for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
+			isDivision = (*iter)->token == "^" && 
+			    (*iter)->children.size() == 2 &&
+			    (*iter)->children[1]->token == "-1";
+		    }
+		    token = isDivision ? token : "/";
+		}
+		else if (token == "+" && root->children.size() == 2) {
+		    bool isSubtraction = false;
+		    for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
+			isSubtraction = (*iter)->token == "*" &&
+			    (*iter)->children.size() == 2 &&
+			    ( ((*iter)->children[0]->token == "-1") !=  ((*iter)->children[1]->token == "-1") );
+		    }
+		    token = isSubtraction ? token : "-";
+		}
+		return token;
+	    }
+
+	    bool node_compare(node_ptr left, node_ptr right) {
+		return node_hash(left) < node_hash(right);
+	    }
+		
 	    void load_tree(std::string string, node_ptr root) {
 		string = remove_spaces(string);
 		string = add_implicit_zeroes(string);
 		string = remove_enclosing_parens(string);
 		int index = find_lowest_priority(string);
-	
+
 		//If the string is just a number
 		if (index == -1) {
 		    root->token = string;
+		    return;
 		}
 
 		//If the string is a function
@@ -364,26 +526,23 @@ namespace Gold {
 		    std::stringstream stream;
 		    stream << string[index];
 		    stream >> operation;
-	  
-		    root->token = operation;
-	  
-		    std::string substr1(string.substr(0,index));
-		    std::string substr2(string.substr(index+1,string.size()-index));
 		    
-		    //Recursive search only for associative and commutative operations
-		    if (operation == "+" || operation == "*") {
-			std::vector<std::string> vec;
-			break_string(substr1, operation, vec);
-			break_string(substr2, operation, vec);
+		    std::string real_operation;
+		    if (operation == "/") real_operation = "*"; 
+		    else if (operation == "-") real_operation = "+";
+		    else real_operation = operation;
+		    
+		    std::string safe_beginning = real_operation == "+" ? "0" : "1";
+  
+		    bool str_is_inverted = (string.substr(0,2) == safe_beginning + operation 
+					    && index == 1
+					    && operation != "^"
+					    && operation != real_operation);
+		    if (str_is_inverted || operation == "^") {
+			std::string substr1(string.substr(0,index));
+			std::string substr2(string.substr(index+1,string.size()-index));
 			
-			root->children.reserve(vec.size());
-			for (auto it = vec.begin(); it != vec.end(); it++) {
-			    node_ptr child = std::make_shared<node>();
-			    root->children.push_back(child);
-			    load_tree(*it, child);
-			}
-		    }
-		    else {
+			root->token = operation;
 			node_ptr left_child = std::make_shared<node>();
 			node_ptr right_child = std::make_shared<node>();
 			
@@ -393,9 +552,145 @@ namespace Gold {
 			load_tree(substr1, left_child);
 			load_tree(substr2, right_child);
 		    }
+
+		    //Recursive search only for associative and commutative operations
+		    else {
+			std::vector<std::string> vec;
+			root->token = real_operation;
+		      
+			break_string(string, operation, vec, false);
+			
+			root->children.reserve(vec.size());
+			for (auto it = vec.begin(); it != vec.end(); it++) {
+			    node_ptr child = std::make_shared<node>();
+			    root->children.push_back(child);
+			    load_tree(*it, child);
+			}
+		    }
+		}
+		std::sort(root->children.begin(), root->children.end(), node_compare);
+	    }
+
+	    void change_inverse_method(node_ptr root) {
+		if ( !root || is_leaf(root)) return;
+		if (root->token == "-" && root->children[0]->token == "0") {
+		    root->token = "*";
+		    root->children[0]->token = "-1";
+		} else if (root->token == "/" && root->children[0]->token == "1") {
+		    root->token = "^";
+		    std::swap(root->children[0], root->children[1]);
+		    root->children[1]->token = "-1";
+		}
+		for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
+		    change_inverse_method(*iter);
 		}
 	    }
 
+	    void simplify_tree(node_ptr root) {
+		if ( !root ) {
+		    return;
+		}
+		if ( is_leaf(root) ) {
+		    return;
+		}
+		
+		for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
+		    simplify_tree(*iter);
+		}
+		
+		if      (root->token == "^") { return simplify_power(root); }
+		else if (root->token == "*") { return simplify_product(root); }
+		//else if (root->token == "+") { return simplify_sum(root); }
+	    }
+
+	    void simplify_power(node_ptr root) {
+		if ( !root || is_leaf(root) || root->token != "^") {
+		    return;
+		}
+		node_ptr base = root->children[0];
+		node_ptr expo = root->children[1];
+		std::string new_token;
+		if ( is_string_num(base->token) && is_string_num(expo->token) ) {
+		    //0^0 will error
+		    new_token = std::pow(atof(base->token.c_str()), atof(expo->token.c_str()));
+		    root->token = new_token;
+		    root->children.clear();
+		    return;
+		}
+		if (base->token == "0") {
+		    new_token = "0";
+		    root->token = new_token;
+		    root->children.clear();
+		    return;
+		}
+		if (base->token == "1") {
+		    new_token = "1";
+		    root->token = new_token;
+		    root->children.clear();
+		    return;
+		}
+		if ( is_string_integer(expo->token) ) {
+		    simplify_integer_power(root);
+		    return;
+		}
+	    }
+
+	    void simplify_integer_power(node_ptr root) {
+		if ( !root || is_leaf(root) || root->token != "^") {
+		    return;
+		}
+		node_ptr base = root->children[0];
+		node_ptr expo = root->children[1];
+		std::string new_token;
+		
+		if ( is_leaf(base) ) {
+		    return;
+		}
+		
+		if ( expo->token == "0") {
+		    new_token = "1";
+		    root->token = new_token;
+		    root->children.clear();
+		    return;
+		}
+		if ( expo->token == "1") {
+		    root = base;
+		    return;
+		}
+		if (base->token == "^") {
+		    node_ptr base_base = base->children[0];
+		    node_ptr base_expo = base->children[0];
+		    node_ptr p = std::make_shared<node>();
+		    p->token = "*";
+		    p->children = { base_expo, expo };
+		    simplify_product(p);
+		    root->children = { base_base, p };
+		    if ( is_string_integer(p->token) ) {
+			simplify_integer_power(root);
+		    }
+		    return;
+		}
+		if (base->token == "*") {
+		    for (auto iter = base->children.begin(); iter != base->children.end(); iter++) {
+			node_ptr old_ptr = *iter;
+			node_ptr new_ptr = std::make_shared<node>();
+			node_ptr new_expo = std::make_shared<node>();
+			
+			new_ptr->token = "^";
+			new_expo->token = expo->token;
+			new_ptr->children = {old_ptr, new_expo};
+			
+			(*iter) = new_ptr;
+		    }
+		    root = base;
+		    simplify_product(root);
+		}
+	    }
+
+	    void simplify_product(node_ptr root) {
+	    }
+
+		
 	    void change_variables(node_ptr root, const std::map<std::string, std::string>& rules) {
 		if (!root) {
 		    return;
@@ -554,7 +849,6 @@ namespace Gold {
 		{"H",[](double x) -> double {return (x >= 0) ? 1 : 0;}}
 	    };
       
-
 	}
     }
 }
