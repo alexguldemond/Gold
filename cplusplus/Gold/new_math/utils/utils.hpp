@@ -203,7 +203,7 @@ namespace Gold {
 	    * invert    => Whether or not to invert the results.
 	    *
 	    *********************************************************************************************/           
-	    void break_string(std::string str, const std::string& , std::vector<std::string>& vector, bool invert = false);
+	    void break_string(std::string str, const std::string& operation, std::vector<std::string>& vector, bool invert = false);
 
 	    /*****************************************************************************************//**
 	    * Determines if the given node is a leaf.
@@ -216,8 +216,21 @@ namespace Gold {
 	    * Return the main operation of the node.
 	    *
 	    * node  => The node to test.
-	    *********************************************************************************************/        
-	    std::string kind(node_ptr node);
+	    ********************************************************************************************/      
+	    enum {
+		UNDEFINED,
+		INTEGER,
+		NUMBER,
+		SYMBOL,
+		FRACTION,
+		FUNCTION,
+		ADD,
+		SUBTRACT,
+		MULTIPLY,
+		DIVIDE,
+		POWER,
+	    };
+	    int kind(node_ptr node);
 
 	    /*****************************************************************************************//**
 	    * Uses a given node to return a hash value.

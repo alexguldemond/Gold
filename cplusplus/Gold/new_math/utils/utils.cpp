@@ -428,10 +428,12 @@ namespace Gold {
 	    }
 
 	    bool is_leaf(node_ptr node) {
+		if (!node) {
+		    return false;
+		}
 		if (node->children.empty()) {
 		    return true;
 		}
-	
 		return false;
 	    }
 
@@ -464,30 +466,57 @@ namespace Gold {
 		return 8.0;
 	    }
 	    
-	    std::string kind(node_ptr root) {
-		if (!root || is_leaf(root)) {
-		    return "";
+	    int kind(node_ptr root) {
+		if (!root) {
+		    return UNDEFINED;
+		} else if (is_leaf(root)) {
+		    if      ( is_string_integer(root->token)) { return INTEGER; }
+		    else if ( is_string_num(root->token))     { return NUMBER;  }
+		    else                                      { return SYMBOL;  }
 		}
-		std::string token = root->token;
-		if (token == "*" && root->children.size() == 2) {
-		    bool isDivision = false;
-		    for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
-			isDivision = (*iter)->token == "^" && 
-			    (*iter)->children.size() == 2 &&
-			    (*iter)->children[1]->token == "-1";
+		const std::string& token = root->token;
+		const std::vector<node_ptr>& children = root->children;
+		if (token == "-") {
+		    return SUBTRACT;
+		} else if (token == "^") {
+		    return POWER;
+		} else if (token == "+") {
+		    if (children.size() != 2) {
+			return ADD;
+		    } else {
+			node_ptr right = children[1];
+			return (right->token == "*" && 
+				right->children.size() == 2 && 
+				right->children[0]->token == "-1") ? SUBTRACT : ADD;
 		    }
-		    token = isDivision ? token : "/";
+		} else if (token == "*") {
+		    if (children.size() != 2) {
+			return MULTIPLY;
+		    } else {
+			node_ptr right = children[1];
+			if (right->token == "^" && 
+			    right->children.size() == 2 && 
+			    right->children[1]->token == "-1") {
+			    node_ptr numerator = children[0];
+			    node_ptr denominator = right->children[0];
+			    return ( is_leaf(numerator) && 
+				     is_leaf(denominator) &&
+				     is_string_integer(numerator->token) &&
+				     is_string_integer(denominator->token)) ? FRACTION : DIVIDE;
+			} else {
+			    return MULTIPLY;
+			}
+		    }	
+		} else if (token == "/") {
+		    node_ptr numerator = children[0];
+		    node_ptr denominator = children[1];
+		    return ( is_leaf(numerator) && 
+			     is_leaf(denominator) &&
+			     is_string_integer(numerator->token) &&
+			     is_string_integer(denominator->token)) ? FRACTION : DIVIDE;
+		} else {
+		    return FUNCTION;
 		}
-		else if (token == "+" && root->children.size() == 2) {
-		    bool isSubtraction = false;
-		    for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
-			isSubtraction = (*iter)->token == "*" &&
-			    (*iter)->children.size() == 2 &&
-			    ( ((*iter)->children[0]->token == "-1") !=  ((*iter)->children[1]->token == "-1") );
-		    }
-		    token = isSubtraction ? token : "-";
-		}
-		return token;
 	    }
 
 	    bool node_compare(node_ptr left, node_ptr right) {
