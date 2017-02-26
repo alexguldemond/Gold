@@ -1,0 +1,4 @@
+[submodule "cplusplus/vendor/googletest"]
+	path = cplusplus/vendor/googletest
+	url = https://github.com/google/googletest
+	branch = master
