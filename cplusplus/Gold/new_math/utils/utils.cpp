@@ -1,4 +1,4 @@
-#include "utils.hpp"
+#include "Gold/new_math/utils/utils.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -42,7 +42,11 @@ namespace Gold {
 
 	    std::pair<int, int> simplify_rational_number(int num, int den) {
 		int gcd = greatest_common_divisor(num, den);
-		return { num / gcd, den / gcd };
+		if (den > 0) {
+		    return { num / gcd, den / gcd };
+		} else {
+		    return { -num / gcd, -den / gcd };
+		}
 	    }
 
 	    bool is_char_num(char ch) {
@@ -470,9 +474,10 @@ namespace Gold {
 		if (!root) {
 		    return UNDEFINED;
 		} else if (is_leaf(root)) {
-		    if      ( is_string_integer(root->token)) { return INTEGER; }
-		    else if ( is_string_num(root->token))     { return NUMBER;  }
-		    else                                      { return SYMBOL;  }
+		    if      ( root->token.empty())            { return UNDEFINED; }
+		    else if ( is_string_integer(root->token)) { return INTEGER;   }
+		    else if ( is_string_num(root->token))     { return NUMBER;    }
+		    else                                      { return SYMBOL;    }
 		}
 		const std::string& token = root->token;
 		const std::vector<node_ptr>& children = root->children;
@@ -597,128 +602,58 @@ namespace Gold {
 			}
 		    }
 		}
-		std::sort(root->children.begin(), root->children.end(), node_compare);
+		if (root->token == "+" || root->token == "*") {
+		    std::sort(root->children.begin(), root->children.end(), node_compare);
+		}
+	    }
+
+	    void clone_tree(node_ptr root, node_ptr clone) {
+		if (!root) {
+		    throw "Nothing to clone, root is null";
+		}
+		if (!clone) {
+		    throw "No clone tree given";
+		}
+		if (!clone->children.empty()) {
+		    clone->children.clear();
+		}
+		clone->token = root->token;
+		if (!is_leaf(root)) {
+		    clone->children.reserve(root->children.size());
+		    for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
+			node_ptr sub_clone = std::make_shared<node>();
+			clone_tree( (*iter), sub_clone);
+			clone->children.push_back(sub_clone);
+		    }
+		}
 	    }
 
 	    void change_inverse_method(node_ptr root) {
 		if ( !root || is_leaf(root)) return;
 		if (root->token == "-" && root->children[0]->token == "0") {
-		    root->token = "*";
-		    root->children[0]->token = "-1";
+		    if (root->children[1]->token != "1") {
+			root->token = "*";
+			root->children[0]->token = "-1";
+		    }
+		    else {
+			root->token = "-1";
+			root->children.clear();
+		    }
 		} else if (root->token == "/" && root->children[0]->token == "1") {
-		    root->token = "^";
-		    std::swap(root->children[0], root->children[1]);
-		    root->children[1]->token = "-1";
+		    if (root->children[1]->token != "1") {
+			root->token = "^";
+			std::swap(root->children[0], root->children[1]);
+			root->children[1]->token = "-1";
+		    }
+		    else {
+			root->token = "-1";
+			root->children.clear();
+		    }
 		}
 		for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
 		    change_inverse_method(*iter);
 		}
 	    }
-
-	    void simplify_tree(node_ptr root) {
-		if ( !root ) {
-		    return;
-		}
-		if ( is_leaf(root) ) {
-		    return;
-		}
-		
-		for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
-		    simplify_tree(*iter);
-		}
-		
-		if      (root->token == "^") { return simplify_power(root); }
-		else if (root->token == "*") { return simplify_product(root); }
-		//else if (root->token == "+") { return simplify_sum(root); }
-	    }
-
-	    void simplify_power(node_ptr root) {
-		if ( !root || is_leaf(root) || root->token != "^") {
-		    return;
-		}
-		node_ptr base = root->children[0];
-		node_ptr expo = root->children[1];
-		std::string new_token;
-		if ( is_string_num(base->token) && is_string_num(expo->token) ) {
-		    //0^0 will error
-		    new_token = std::pow(atof(base->token.c_str()), atof(expo->token.c_str()));
-		    root->token = new_token;
-		    root->children.clear();
-		    return;
-		}
-		if (base->token == "0") {
-		    new_token = "0";
-		    root->token = new_token;
-		    root->children.clear();
-		    return;
-		}
-		if (base->token == "1") {
-		    new_token = "1";
-		    root->token = new_token;
-		    root->children.clear();
-		    return;
-		}
-		if ( is_string_integer(expo->token) ) {
-		    simplify_integer_power(root);
-		    return;
-		}
-	    }
-
-	    void simplify_integer_power(node_ptr root) {
-		if ( !root || is_leaf(root) || root->token != "^") {
-		    return;
-		}
-		node_ptr base = root->children[0];
-		node_ptr expo = root->children[1];
-		std::string new_token;
-		
-		if ( is_leaf(base) ) {
-		    return;
-		}
-		
-		if ( expo->token == "0") {
-		    new_token = "1";
-		    root->token = new_token;
-		    root->children.clear();
-		    return;
-		}
-		if ( expo->token == "1") {
-		    root = base;
-		    return;
-		}
-		if (base->token == "^") {
-		    node_ptr base_base = base->children[0];
-		    node_ptr base_expo = base->children[0];
-		    node_ptr p = std::make_shared<node>();
-		    p->token = "*";
-		    p->children = { base_expo, expo };
-		    simplify_product(p);
-		    root->children = { base_base, p };
-		    if ( is_string_integer(p->token) ) {
-			simplify_integer_power(root);
-		    }
-		    return;
-		}
-		if (base->token == "*") {
-		    for (auto iter = base->children.begin(); iter != base->children.end(); iter++) {
-			node_ptr old_ptr = *iter;
-			node_ptr new_ptr = std::make_shared<node>();
-			node_ptr new_expo = std::make_shared<node>();
-			
-			new_ptr->token = "^";
-			new_expo->token = expo->token;
-			new_ptr->children = {old_ptr, new_expo};
-			
-			(*iter) = new_ptr;
-		    }
-		    root = base;
-		    simplify_product(root);
-		}
-	    }
-
-	    void simplify_product(node_ptr root) {
-	    }
-
 		
 	    void change_variables(node_ptr root, const std::map<std::string, std::string>& rules) {
 		if (!root) {
@@ -845,7 +780,8 @@ namespace Gold {
 			*it = std::string("(").append(*it).append(")");
 		    }
 		}
-		return join_vector(token, args);
+		std::string results = join_vector(token, args);
+		return results;
 	    }
 	   
 	    std::map<std::string, double> symbols_table = {

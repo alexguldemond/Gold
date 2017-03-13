@@ -258,19 +258,12 @@ namespace Gold {
 	    void load_tree(std::string string, node_ptr root);
 
 	    /*****************************************************************************************//**
-	    * Simplifies the tree as much as possible.
+	    * Clones the tree into a new one. This will destroy whatever is in clone.
 	    *
-	    * root   => The root of the tree.\n
-	    *********************************************************************************************/	    
-	    void simplify_tree(node_ptr root);
-
-	    void simplify_power(node_ptr root);
-
-	    void simplify_integer_power(node_ptr root);
-
-	    void simplify_product(node_ptr root);
-
-	    void simplify_sum(node_ptr root);
+	    * root   => The root of the tree to clone.\n
+	    * clone  => The root of the target tree.
+	    *********************************************************************************************/
+	    void clone_tree(node_ptr root, node_ptr clone);
 
 	    /*****************************************************************************************//**
 	    * Changes the way inversions are done. (0-a) becomes (-1)*a and 1/b becomes b^(-1).

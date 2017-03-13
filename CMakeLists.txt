@@ -35,17 +35,23 @@ project(Gold)
 
 enable_testing()
 set(GTEST_libs gtest gtest_main)
-set(GOLD_CPLUSPLUS_HOME ${PROJECT_SOURCE_DIR}/cplusplus/Gold)
-set(NEW_MATH_HOME ${GOLD_CPLUSPLUS_HOME}/new_math)
-set(SOURCES ${NEW_MATH_HOME}/utils/utils.cpp)
+set(GOLD_CPLUSPLUS_HOME ${PROJECT_SOURCE_DIR}/cplusplus)
+set(NEW_MATH_HOME ${GOLD_CPLUSPLUS_HOME}/Gold/new_math)
+set(SOURCES ${NEW_MATH_HOME}/utils/utils.cpp ${NEW_MATH_HOME}/simplify/simplify.cpp)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++0x")
 
-include_directories(${NEW_MATH_HOME}/utils)
+include_directories(${GOLD_CPLUSPLUS_HOME})
 
 add_library(gold_math SHARED ${SOURCES})
 
+# math/utils/utils_test
 add_executable(math_utils_test ${NEW_MATH_HOME}/utils/utils_test.cxx)
 target_link_libraries(math_utils_test gtest_main gold_math)
 add_test(NAME math_utils_test COMMAND math_utils_test)
+
+# math/simplify/simplify_test
+add_executable(math_simplify_test ${NEW_MATH_HOME}/simplify/simplify_test.cxx)
+target_link_libraries(math_simplify_test gtest_main gold_math)
+add_test(NAME math_simplify_test COMMAND math_simplify_test)

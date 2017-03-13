@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "utils.hpp"
+#include "Gold/new_math/utils/utils.hpp"
 
 using namespace Gold::math::utils;
 
@@ -441,9 +441,35 @@ TEST(Evaluate, Tests) {
 TEST(BuildStringFromTree, Tests) {
     node_ptr root = std::make_shared<node>();
     load_tree("Sin[a-b]+c/d", root);
-    EXPECT_EQ("Sin[a+0-b]+c*1/d", build_string_from_tree(root));
+    ASSERT_EQ("Sin[a+0-b]+c*1/d", build_string_from_tree(root));
     change_inverse_method(root);
-    EXPECT_EQ("Sin[a+(-1)*b]+c*d^(-1)", build_string_from_tree(root));
+    ASSERT_EQ("Sin[a+(-1)*b]+c*d^(-1)", build_string_from_tree(root));
+}
+
+TEST(CloneTree, Test) {
+    node_ptr root = std::make_shared<node>();
+    node_ptr clone = std::make_shared<node>();
+    load_tree("a+b+c", root);
+    clone_tree(root, clone);
+    EXPECT_EQ(build_string_from_tree(root), build_string_from_tree(clone));
+
+    root = std::make_shared<node>();
+    root = std::make_shared<node>();
+    load_tree("a+b-c", root);
+    clone_tree(root, clone);
+    EXPECT_EQ(build_string_from_tree(root), build_string_from_tree(clone));
+
+    root = std::make_shared<node>();
+    root = std::make_shared<node>();
+    load_tree("a*b^c", root);
+    clone_tree(root, clone);
+    EXPECT_EQ(build_string_from_tree(root), build_string_from_tree(clone));
+
+    root = std::make_shared<node>();
+    root = std::make_shared<node>();
+    load_tree("x^2+2*x+4", root);
+    clone_tree(root, clone);
+    EXPECT_EQ(build_string_from_tree(root), build_string_from_tree(clone));
 }
 
 int main(int argc, char** argv) {
