@@ -257,6 +257,7 @@ namespace Gold {
 		int index = -1;
 		while (index == -1 && maxParenLevel >= parenSearchLevel) {
 		    index = search(str,parenSearchLevel,'+','-');
+		    if (index == 0 && str[0] == '-') index = -1; //Error correction
 		    if (index != -1) break;
 		    index = search(str,parenSearchLevel,'*','/');
 		    if (index != -1) break;
@@ -349,441 +350,44 @@ namespace Gold {
 		return args;
 	    }
    
-	    void break_string( std::string str, const std::string& operation, std::vector<std::string>& vector, bool invert) {
+	    void break_string(std::string str, const std::string& operation, std::vector<std::string>& vector, bool invert) {
 		if (operation != "+" && operation != "-" &&
 		    operation != "*" && operation != "/") {
 		    throw operation + " can't be used to break the string";
 		}
-		std::string real_operation = operation;
-		if (operation == "/") {
-			real_operation = "*";
-		}
-		if (operation == "-") {
-		    real_operation = "+";
-		}
-		std::string inverse_operation = real_operation == "+" ? "-" : "/";
-		std::string safe_beginning = real_operation == "+" ? "0" : "1";
 		str = remove_enclosing_parens(str);
 		int index = find_lowest_priority(str);
-		bool str_is_inverted = (str.substr(0,2) == safe_beginning + inverse_operation && index == 1);
-	        
-#ifdef DEBUG
-		std::cout << "Str = " << str << "\n";
-		std::cout << "Operation = " << operation << "\n";
-		std::cout << "Invert = " << invert << "\n";
-		std::cout << "real operation = " << real_operation << "\n";
-		std::cout << "safe beginning = " << safe_beginning << "\n";
-		std::cout << "Is string inverted = " << str_is_inverted << "\n";
-#endif
-		
-		if (index < 0) {
+		std::string field_operation; 
+		std::string inverse_operation;
+		if (operation == "+" || operation == "-") {
+		    field_operation = "+";
+		    inverse_operation = "-";
+		}
+		else /*if (operation == "*" || operation == "/")*/ {
+		    field_operation = "*";
+		    inverse_operation = "/";
+		}
+		std::string found_operation = std::string(1,str[index]);
+		if ( found_operation == field_operation || found_operation == inverse_operation) {
+		    std::string lhs = str.substr(0, index);
+		    std::string rhs = str.substr(index+1, str.size()-1);
+		    break_string(lhs, operation, vector, invert);
+		    break_string(rhs, operation, vector, invert != (found_operation == inverse_operation) );
+		} 
+		else {
 		    if (invert) {
-			std::string temp = safe_beginning;
-			append_with_parens(temp, str, inverse_operation, true);
-			str = temp;
+			if (operation == "+" || operation == "-") {
+			    str.insert(0, "(-1)*(").append(")");
+			}
+			else /*if (operation == "*" || operation == "/")*/ {
+			    str.insert(0, "(").append(")^(-1)");
+			}
 		    }
-#ifdef DEBUG
-		    std::cout << "Pushing " << str << "\n"; 
-		    std::cout << "\n\n";
-#endif
 		    vector.push_back(str);
 		    return;
-		}
-		
-		if (str_is_inverted) {
-		    if (invert) {
-			std::string temp = safe_beginning;
-			str = remove_enclosing_parens( str.substr(2, str.size()-2) );
-			str = temp;
-		    }
-#ifdef DEBUG
-		    std::cout << "Pushing " << str << "\n"; 
-		    std::cout << "\n\n";
-#endif
-		    vector.push_back(str);
-		    return;
-		}
-
-		std::string new_operation;
-		std::stringstream stream;
-		stream << str[index];
-		stream >> new_operation;
-		
-		if ( new_operation != operation && new_operation != inverse_operation) {
-		    if (invert) {
-		        std::string temp = safe_beginning;
-			append_with_parens(temp, str, inverse_operation, true);
-			str = temp;
-		    }
-#ifdef DEBUG
-		    std::cout << "Pushing " << str << "\n"; 
-		    std::cout << "\n\n";
-#endif
-		    vector.push_back(str);
-		    return;
-		}
-		
-		std::string substr1(remove_enclosing_parens(str.substr(0,index)));
-		
-		std::string substr2(remove_enclosing_parens(str.substr(index+1,str.size()-index)));
-		
-		break_string(substr1, operation, vector, invert);
-		break_string(substr2, operation, vector, (operation == inverse_operation) ? !invert : invert);
+		} 
 	    }
 
-	    bool is_leaf(node_ptr node) {
-		if (!node) {
-		    return false;
-		}
-		if (node->children.empty()) {
-		    return true;
-		}
-		return false;
-	    }
-
-	    double node_hash(node_ptr node) {
-		if (!node) {
-		    return -2.0;
-		}
-		std::string token = node->token;
-		if (is_string_num(token)) {
-		    double num = atof(token.c_str());
-		    return (num > 0) ? num / (1 + num) : num / (1 - num);
-		}
-		if (is_leaf(node)) {
-		    double num = 1.0;
-		    for (auto iter = token.begin(); iter != token.end(); iter++) {
-			num += *iter;
-		    }
-		    return (num > 0) ? num / (1 + num) : num / (1 - num);
-		}
-		if (token != "+" && token != "-" && token != "*" && token != "/" && token != "^") {
-		    return 2.0;
-		}
-		double num = 3.0;
-		std::vector<std::string> ops = { "+", "-", "*", "/", "^" };
-		for (unsigned int i = 0; i < ops.size(); i++) {
-		    if (token == ops[i]) {
-			return num + i;
-		    }
-		}
-		return 8.0;
-	    }
-	    
-	    int kind(node_ptr root) {
-		if (!root) {
-		    return UNDEFINED;
-		} else if (is_leaf(root)) {
-		    if      ( root->token.empty())            { return UNDEFINED; }
-		    else if ( is_string_integer(root->token)) { return INTEGER;   }
-		    else if ( is_string_num(root->token))     { return NUMBER;    }
-		    else                                      { return SYMBOL;    }
-		}
-		const std::string& token = root->token;
-		const std::vector<node_ptr>& children = root->children;
-		if (token == "-") {
-		    return SUBTRACT;
-		} else if (token == "^") {
-		    return POWER;
-		} else if (token == "+") {
-		    if (children.size() != 2) {
-			return ADD;
-		    } else {
-			node_ptr right = children[1];
-			return (right->token == "*" && 
-				right->children.size() == 2 && 
-				right->children[0]->token == "-1") ? SUBTRACT : ADD;
-		    }
-		} else if (token == "*") {
-		    if (children.size() != 2) {
-			return MULTIPLY;
-		    } else {
-			node_ptr right = children[1];
-			if (right->token == "^" && 
-			    right->children.size() == 2 && 
-			    right->children[1]->token == "-1") {
-			    node_ptr numerator = children[0];
-			    node_ptr denominator = right->children[0];
-			    return ( is_leaf(numerator) && 
-				     is_leaf(denominator) &&
-				     is_string_integer(numerator->token) &&
-				     is_string_integer(denominator->token)) ? FRACTION : DIVIDE;
-			} else {
-			    return MULTIPLY;
-			}
-		    }	
-		} else if (token == "/") {
-		    node_ptr numerator = children[0];
-		    node_ptr denominator = children[1];
-		    return ( is_leaf(numerator) && 
-			     is_leaf(denominator) &&
-			     is_string_integer(numerator->token) &&
-			     is_string_integer(denominator->token)) ? FRACTION : DIVIDE;
-		} else {
-		    return FUNCTION;
-		}
-	    }
-
-	    bool node_compare(node_ptr left, node_ptr right) {
-		return node_hash(left) < node_hash(right);
-	    }
-		
-	    void load_tree(std::string string, node_ptr root) {
-		string = remove_spaces(string);
-		string = add_implicit_zeroes(string);
-		string = remove_enclosing_parens(string);
-		int index = find_lowest_priority(string);
-
-		//If the string is just a number
-		if (index == -1) {
-		    root->token = string;
-		    return;
-		}
-
-		//If the string is a function
-		else if (index == -2) {
-		    std::string newString( string.substr(string.find("[")+1, string.size()-2-string.find("[")) );
-		    std::string funcName( string.substr(0,string.find("[")));
-		    root->token = funcName;
-
-		    std::vector<std::string> args = split_string(newString, ",");
-		    for (auto it = args.begin(); it != args.end(); it++) {
-			node_ptr child = std::make_shared<node>();
-			root->children.push_back(child);
-			load_tree(*it, child);
-		    }
-		}
-	
-		//If this is a simple expression
-		else {
-		    std::string operation;
-		    std::stringstream stream;
-		    stream << string[index];
-		    stream >> operation;
-		    
-		    std::string real_operation;
-		    if (operation == "/") real_operation = "*"; 
-		    else if (operation == "-") real_operation = "+";
-		    else real_operation = operation;
-		    
-		    std::string safe_beginning = real_operation == "+" ? "0" : "1";
-  
-		    bool str_is_inverted = (string.substr(0,2) == safe_beginning + operation 
-					    && index == 1
-					    && operation != "^"
-					    && operation != real_operation);
-		    if (str_is_inverted || operation == "^") {
-			std::string substr1(string.substr(0,index));
-			std::string substr2(string.substr(index+1,string.size()-index));
-			
-			root->token = operation;
-			node_ptr left_child = std::make_shared<node>();
-			node_ptr right_child = std::make_shared<node>();
-			
-			root->children.push_back(left_child);
-			root->children.push_back(right_child);
-			
-			load_tree(substr1, left_child);
-			load_tree(substr2, right_child);
-		    }
-
-		    //Recursive search only for associative and commutative operations
-		    else {
-			std::vector<std::string> vec;
-			root->token = real_operation;
-		      
-			break_string(string, operation, vec, false);
-			
-			root->children.reserve(vec.size());
-			for (auto it = vec.begin(); it != vec.end(); it++) {
-			    node_ptr child = std::make_shared<node>();
-			    root->children.push_back(child);
-			    load_tree(*it, child);
-			}
-		    }
-		}
-		if (root->token == "+" || root->token == "*") {
-		    std::sort(root->children.begin(), root->children.end(), node_compare);
-		}
-	    }
-
-	    void clone_tree(node_ptr root, node_ptr clone) {
-		if (!root) {
-		    throw "Nothing to clone, root is null";
-		}
-		if (!clone) {
-		    throw "No clone tree given";
-		}
-		if (!clone->children.empty()) {
-		    clone->children.clear();
-		}
-		clone->token = root->token;
-		if (!is_leaf(root)) {
-		    clone->children.reserve(root->children.size());
-		    for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
-			node_ptr sub_clone = std::make_shared<node>();
-			clone_tree( (*iter), sub_clone);
-			clone->children.push_back(sub_clone);
-		    }
-		}
-	    }
-
-	    void change_inverse_method(node_ptr root) {
-		if ( !root || is_leaf(root)) return;
-		if (root->token == "-" && root->children[0]->token == "0") {
-		    if (root->children[1]->token != "1") {
-			root->token = "*";
-			root->children[0]->token = "-1";
-		    }
-		    else {
-			root->token = "-1";
-			root->children.clear();
-		    }
-		} else if (root->token == "/" && root->children[0]->token == "1") {
-		    if (root->children[1]->token != "1") {
-			root->token = "^";
-			std::swap(root->children[0], root->children[1]);
-			root->children[1]->token = "-1";
-		    }
-		    else {
-			root->token = "-1";
-			root->children.clear();
-		    }
-		}
-		for (auto iter = root->children.begin(); iter != root->children.end(); iter++) {
-		    change_inverse_method(*iter);
-		}
-	    }
-		
-	    void change_variables(node_ptr root, const std::map<std::string, std::string>& rules) {
-		if (!root) {
-		    return;
-		}
-		if (is_leaf(root)) {
-		    if ( rules.find( root->token ) != rules.end() ) {
-			load_tree( rules.at(root->token), root );
-		    }
-		}
-		else {
-		    for (auto it = root->children.begin(); it != root->children.end(); it++) {
-			change_variables(*it, rules);
-		    }
-		}
-	    }
-
-	    double evaluate(const node_ptr& root,const std::map<std::string, double>& params) {
-		if (!root) {
-		    std::cerr << "Root is null pointer, returning zero\n";
-		    return 0;
-		}
-	
-		const std::string& token = root->token;
-
-		//Number or variable
-		if (is_leaf(root)) {
-		    if (params.find(token) != params.end()) {
-			return params.at(token);
-		    } 
-		    else if (symbols_table.find(token) != symbols_table.end()) {
-			return symbols_table.at(token);
-		    }
-		    else if (is_string_num(token)) {
-			return atof(token.c_str());
-		    }
-		    else {
-			throw token + " can't be interpretted as a variable or a number\n";
-		    }
-		}
-
-		//Function
-		else if (token != "+" && token != "-" && token != "*" && token != "/" && token != "^") {
-		    if (function_table.find(token) != function_table.end()) {
-			return function_table.at(token)(evaluate(root->children[0], params));
-		    }
-		    else {
-			throw token + " can;t be interpretted as a function name\n";
-			return 0;
-		    }
-		}
-	
-		//Operator
-		else {
-		    std::vector<double> vals;
-		    vals.reserve(root->children.size());
-	  
-		    for ( auto it = root->children.begin(); it != root->children.end(); it++) {
-			vals.push_back( evaluate(*it, params) );
-		    }
-	  
-#ifdef DEBUG
-		    std::cout << "token: " << token << "\t";
-		    for (auto it = vals.begin(); it != vals.end(); it++) {
-			std::cout << *it << ", ";
-		    }
-		    std::cout << " result = ";
-#endif	 
- 
-		    double result;
-		    if (token != "^") {
-			result = *(vals.begin());
-			for (auto it = vals.begin()+1; it != vals.end(); it++) {
-			    if      (token == "+") { result += *it; }
-			    else if (token == "-") { result -= *it; }
-			    else if (token == "*") { result *= *it; }
-			    else if (token == "/") { result /= *it; }
-			    else {
-				throw token + " can't be parsed as an operator\n";
-			    }
-			}
-		    }
-
-		    //Token = ^ requires different logic due to how exponentiation works
-		    else {
-			result = *(vals.rbegin());
-			for (auto it = vals.rbegin()+1; it != vals.rend(); it++) {
-			    result = pow(*it, result);
-			}
-		    }
-#ifdef DEBUG
-		    std::cout << result << "\n";
-#endif
-		    return result;
-	    
-		}
-	    }
-
-	    std::string build_string_from_tree(const node_ptr& root) {
-		if (!root) {
-		    return "";
-		}
-		else if (is_leaf(root)) {
-		    return root->token;
-		}
-		
-		std::vector<std::string> args;
-		args.reserve(root->children.size());
-		for (auto it = root->children.cbegin(); it != root->children.cend(); it++) {
-		    args.push_back(build_string_from_tree(*it));
-		}
-		
-		//If node is a function call
-		std::string token = root->token;
-		if (token != "+" && token != "-" && token != "*" && token != "/" && token != "^") {
-		    std::string string = root->token;
-		    string.append("[");
-		    string.append(join_vector(", ", args)).append("]");
-		    return string;
-		}
-
-		for (auto it = args.begin(); it != args.end(); it++) {
-		    if (needs_parens(*it, token , it != args.begin())) {
-			*it = std::string("(").append(*it).append(")");
-		    }
-		}
-		std::string results = join_vector(token, args);
-		return results;
-	    }
-	   
 	    std::map<std::string, double> symbols_table = {
 		{"PI",atan(1)*4},
 		{"e",2.71828182845904523536}};
