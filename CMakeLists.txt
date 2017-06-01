@@ -43,7 +43,6 @@ set(SOURCES
   ${MATH_HOME}/node/node.cpp
   ${MATH_HOME}/expression/expression.cpp 
   ${MATH_HOME}/expression/variable.cpp 
-  #${MATH_HOME}/simplify/simplify.cpp
 )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
@@ -56,22 +55,25 @@ add_library(gold_math SHARED ${SOURCES})
 
 # math/utils/utils_test
 add_executable(math_utils_test ${MATH_HOME}/utils/utils_test.cxx)
-target_link_libraries(math_utils_test gtest_main gold_math)
+set_target_properties(math_utils_test PROPERTIES COMPILE_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
+target_link_libraries(math_utils_test gtest_main gold_math gcov)
 add_test(NAME math_utils_test COMMAND math_utils_test)
 
 # math/node/node_test
 add_executable(math_node_test ${MATH_HOME}/node/node_test.cxx)
-target_link_libraries(math_node_test gtest_main gold_math)
+set_target_properties(math_node_test PROPERTIES COMPILE_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
+target_link_libraries(math_node_test gtest_main gold_math gcov)
 add_test(NAME math_node_test COMMAND math_node_test)
 
 
 # math/expression/expression_test
 add_executable(math_expression_test ${MATH_HOME}/expression/expression_test.cxx)
-target_link_libraries(math_expression_test gtest_main gold_math)
+set_target_properties(math_expression_test PROPERTIES COMPILE_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
+target_link_libraries(math_expression_test gtest_main gold_math gcov)
 add_test(NAME math_expression_test COMMAND math_expression_test)
 
-
-# math/simplify/simplify_test
-#add_executable(math_simplify_test ${MATH_HOME}/simplify/simplify_test.cxx)
-#target_link_libraries(math_simplify_test gtest_main gold_math)
-#add_test(NAME math_simplify_test COMMAND math_simplify_test)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
+if(CMAKE_COMPILER_IS_GNUCXX)
+    include(CodeCoverage)
+    setup_target_for_coverage(coverage ctest coverage)
+endif()
