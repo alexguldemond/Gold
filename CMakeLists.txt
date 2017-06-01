@@ -36,13 +36,14 @@ project(Gold)
 enable_testing()
 set(GTEST_libs gtest gtest_main)
 set(GOLD_CPLUSPLUS_HOME ${PROJECT_SOURCE_DIR}/cplusplus)
-set(NEW_MATH_HOME ${GOLD_CPLUSPLUS_HOME}/Gold/new_math)
+set(MATH_HOME ${GOLD_CPLUSPLUS_HOME}/Gold/math)
 
 set(SOURCES 
-  ${NEW_MATH_HOME}/utils/utils.cpp 
-  ${NEW_MATH_HOME}/node/node.cpp
-  ${NEW_MATH_HOME}/expression/expression.cpp 
-  #${NEW_MATH_HOME}/simplify/simplify.cpp
+  ${MATH_HOME}/utils/utils.cpp 
+  ${MATH_HOME}/node/node.cpp
+  ${MATH_HOME}/expression/expression.cpp 
+  ${MATH_HOME}/expression/variable.cpp 
+  #${MATH_HOME}/simplify/simplify.cpp
 )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
@@ -54,23 +55,23 @@ include_directories(${GOLD_CPLUSPLUS_HOME})
 add_library(gold_math SHARED ${SOURCES})
 
 # math/utils/utils_test
-add_executable(math_utils_test ${NEW_MATH_HOME}/utils/utils_test.cxx)
+add_executable(math_utils_test ${MATH_HOME}/utils/utils_test.cxx)
 target_link_libraries(math_utils_test gtest_main gold_math)
 add_test(NAME math_utils_test COMMAND math_utils_test)
 
 # math/node/node_test
-add_executable(math_node_test ${NEW_MATH_HOME}/node/node_test.cxx)
+add_executable(math_node_test ${MATH_HOME}/node/node_test.cxx)
 target_link_libraries(math_node_test gtest_main gold_math)
 add_test(NAME math_node_test COMMAND math_node_test)
 
 
 # math/expression/expression_test
-add_executable(math_expression_test ${NEW_MATH_HOME}/expression/expression_test.cxx)
+add_executable(math_expression_test ${MATH_HOME}/expression/expression_test.cxx)
 target_link_libraries(math_expression_test gtest_main gold_math)
 add_test(NAME math_expression_test COMMAND math_expression_test)
 
 
 # math/simplify/simplify_test
-#add_executable(math_simplify_test ${NEW_MATH_HOME}/simplify/simplify_test.cxx)
+#add_executable(math_simplify_test ${MATH_HOME}/simplify/simplify_test.cxx)
 #target_link_libraries(math_simplify_test gtest_main gold_math)
 #add_test(NAME math_simplify_test COMMAND math_simplify_test)
