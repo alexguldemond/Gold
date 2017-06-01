@@ -35,7 +35,7 @@ project(Gold)
 
 enable_testing()
 set(GTEST_libs gtest gtest_main)
-set(GOLD_CPLUSPLUS_HOME ${PROJECT_SOURCE_DIR}/cplusplus)
+set(GOLD_CPLUSPLUS_HOME ${PROJECT_SOURCE_DIR}/src/cplusplus)
 set(MATH_HOME ${GOLD_CPLUSPLUS_HOME}/Gold/math)
 
 set(SOURCES 
