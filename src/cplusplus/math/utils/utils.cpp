@@ -1,4 +1,4 @@
-#include "Gold/math/utils/utils.hpp"
+#include "Gold/math/utils.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>

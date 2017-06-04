@@ -36,7 +36,8 @@ project(Gold)
 enable_testing()
 set(GTEST_libs gtest gtest_main)
 set(GOLD_CPLUSPLUS_HOME ${PROJECT_SOURCE_DIR}/src/cplusplus)
-set(MATH_HOME ${GOLD_CPLUSPLUS_HOME}/Gold/math)
+set(GOLD_INCLUDE ${PROJECT_SOURCE_DIR}/include)
+set(MATH_HOME ${GOLD_CPLUSPLUS_HOME}/math)
 
 set(SOURCES 
   ${MATH_HOME}/utils/utils.cpp 
@@ -49,7 +50,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++1y")
 
-include_directories(${GOLD_CPLUSPLUS_HOME})
+include_directories(${GOLD_INCLUDE})
 
 add_library(gold_math SHARED ${SOURCES})
 

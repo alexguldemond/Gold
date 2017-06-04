@@ -1,4 +1,4 @@
-#include "Gold/math/expression/variable.hpp"
+#include "Gold/math/variable.hpp"
 
 namespace Gold {
     namespace math {

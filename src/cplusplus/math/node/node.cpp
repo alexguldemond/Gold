@@ -1,5 +1,5 @@
-#include "Gold/math/node/node.hpp"
-#include "Gold/math/utils/utils.hpp"
+#include "Gold/math/node.hpp"
+#include "Gold/math/utils.hpp"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/split.hpp>

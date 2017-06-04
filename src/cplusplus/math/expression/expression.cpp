@@ -1,4 +1,4 @@
-#include "Gold/math/expression/expression.hpp"
+#include "Gold/math/expression.hpp"
 #include <iostream>
 
 namespace Gold {
