@@ -44,6 +44,7 @@ set(SOURCES
   ${MATH_HOME}/node/node.cpp
   ${MATH_HOME}/expression/expression.cpp 
   ${MATH_HOME}/expression/variable.cpp 
+  ${MATH_HOME}/function/function.cpp 
 )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
@@ -72,6 +73,12 @@ add_executable(math_expression_test ${MATH_HOME}/expression/expression_test.cxx)
 set_target_properties(math_expression_test PROPERTIES COMPILE_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
 target_link_libraries(math_expression_test gtest_main gold_math gcov)
 add_test(NAME math_expression_test COMMAND math_expression_test)
+
+# math/expression/expression_test
+add_executable(math_function_test ${MATH_HOME}/function/function_test.cxx)
+set_target_properties(math_function_test PROPERTIES COMPILE_FLAGS "-g -O0 -fprofile-arcs -ftest-coverage")
+target_link_libraries(math_function_test gtest_main gold_math gcov)
+add_test(NAME math_function_test COMMAND math_function_test)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
 if(CMAKE_COMPILER_IS_GNUCXX)

@@ -50,7 +50,7 @@ namespace Gold {
 	    if (!defined()) {
 		throw std::string("Undefined evaluation");
 	    }
-	    return (*root)(args);
+	    return root->evaluate(args);
 	}
 	
 	bool expression::defined() const {

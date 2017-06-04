@@ -46,8 +46,8 @@ namespace Gold {
 			    });    
 		}
 		
-		virtual double operator()(const std::map<std::string, double>& args = { }) const { 
-		    throw std::string("base_node::operator() Should not be called"); 
+		virtual double evaluate(const std::map<std::string, double>& args = { }) const { 
+		    throw std::string("base_node::evaluate Should not be called"); 
 		}
 		
 		virtual ptr numerator() const;
@@ -74,7 +74,7 @@ namespace Gold {
 		virtual add* clone() const { return new add(*this); }
 		virtual ~add() { }
 		virtual std::string get_token() const { return "+"; }
-		virtual double operator() (const std::map<std::string, double>& args = { }) const;
+		virtual double evaluate(const std::map<std::string, double>& args = { }) const;
 		virtual std::string string() const;
 		virtual base_node::ptr derivative(const std::string& var) const;
 		virtual base_node::ptr change_variables(const std::map<std::string, base_node::ptr>& changes) const;
@@ -99,7 +99,7 @@ namespace Gold {
 			});
 		}
 		virtual std::string get_token() const { return "*"; }
-		virtual double operator() (const std::map<std::string, double>& args = { }) const;
+		virtual double evaluate(const std::map<std::string, double>& args = { }) const;
 		virtual std::string string() const;
 		virtual base_node::ptr derivative(const std::string& var) const;
 		virtual base_node::ptr change_variables(const std::map<std::string, base_node::ptr>& changes) const;
@@ -126,7 +126,7 @@ namespace Gold {
 		virtual std::string get_token() const { return "^"; }
 		virtual base_node::ptr base() const;
 		virtual base_node::ptr exponent() const; 
-		virtual double operator() (const std::map<std::string, double>& args = { }) const;
+		virtual double evaluate(const std::map<std::string, double>& args = { }) const;
 		virtual std::string string() const;
 		virtual base_node::ptr derivative(const std::string& var) const;
 		virtual base_node::ptr change_variables(const std::map<std::string, base_node::ptr>& changes) const;
@@ -156,7 +156,7 @@ namespace Gold {
 		virtual function* clone() const { return new function(*this); }
 		virtual ~function() { }
 		virtual std::string get_token() const { return token; }
-		virtual double operator() (const std::map<std::string, double>& args = { }) const;
+		virtual double evaluate(const std::map<std::string, double>& args = { }) const;
 		virtual std::string string() const;
 		virtual base_node::ptr derivative(const std::string& var) const;
 		virtual base_node::ptr change_variables(const std::map<std::string, base_node::ptr>& changes) const;
@@ -190,7 +190,7 @@ namespace Gold {
 		virtual bool is_minus_one() const { return token == -1; }
 		virtual bool is_undefined() const { return false; }
 		virtual std::string get_token() const { return std::to_string(token); }
-		virtual double operator() (const std::map<std::string, double>& /*args*/ = { }) const;
+		virtual double evaluate(const std::map<std::string, double>& /*args*/ = { }) const;
 		virtual std::string string() const { return this->get_token(); }
 		virtual base_node::ptr derivative(const std::string& var) const { return std::make_unique<integer>(0); }
 		virtual base_node::ptr change_variables(const std::map<std::string, base_node::ptr>& changes) const { 
@@ -226,7 +226,7 @@ namespace Gold {
 		virtual bool is_minus_one() const { return token == -1; }
 		virtual bool is_undefined() const { return false; }
 		virtual std::string get_token() const { return std::to_string(token); }
-		virtual double operator() (const std::map<std::string, double>& /*args*/ = { }) const;
+		virtual double evaluate(const std::map<std::string, double>& /*args*/ = { }) const;
 		virtual std::string string() const { return this->get_token(); }
 		virtual base_node::ptr derivative(const std::string& var) const { return std::make_unique<integer>(0); }
 		virtual base_node::ptr change_variables(const std::map<std::string, base_node::ptr>& changes) const { 
@@ -258,7 +258,7 @@ namespace Gold {
 		virtual ~variable() { }
 		virtual bool is_undefined() const { return false; }
 		virtual std::string get_token() const { return token; }
-		virtual double operator() (const std::map<std::string, double>& args = { }) const;
+		virtual double evaluate(const std::map<std::string, double>& args = { }) const;
 		virtual std::string string() const { return this->get_token(); }
 		virtual base_node::ptr derivative(const std::string& var) const { 
 		    if (get_token() == var) { 

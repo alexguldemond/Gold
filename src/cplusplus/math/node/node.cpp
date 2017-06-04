@@ -113,27 +113,27 @@ namespace Gold {
 
 	    /*************************************************
 	     *
-	     * Declartations of the parantheses operator
+	     * Definitions of evaluate
 	     *
 	     ************************************************/
-	    double add::operator()(const std::map<std::string, double>& args) const {
+	    double add::evaluate(const std::map<std::string, double>& args) const {
 		if (children.empty()) {
 			throw std::string("Add node not initialized with children");
 		}
 		double sum = 0;
 		for (auto iter = children.begin(); iter != children.end(); iter++) {
-		    sum += (**iter)(args);
+		    sum += (*iter)->evaluate(args);
 		}
 		return sum;
 	    }
 
-	    double multiply::operator()(const std::map<std::string, double>& args) const {
+	    double multiply::evaluate(const std::map<std::string, double>& args) const {
 		if (children.empty()) {
 			throw std::string("multiply node not initialized with children");
 		}
 		double product = 1;
 		for (auto iter = children.begin(); iter != children.end(); iter++) {
-		    product *= (**iter)(args);
+		    product *= (*iter)->evaluate(args);
 		}
 		return product;
 	    }	
@@ -158,16 +158,16 @@ namespace Gold {
 		return base_node::ptr( children[1]->clone() ); 
 	    }
 
-	    double power::operator()(const std::map<std::string, double>& args) const {
+	    double power::evaluate(const std::map<std::string, double>& args) const {
 		if (children.size() != 2) {
 			throw std::string("Power node initialized with more or less than two children");
 		}
-		double base = ( *(this->base()))(args);
-		double expo = ( *(this->exponent()))(args);	
+		double base = this->base()->evaluate(args);
+		double expo = this->exponent()->evaluate(args);	
 		return std::pow(base, expo);
 	    }
 
-	    double function::operator()(const std::map<std::string, double>& args) const {
+	    double function::evaluate(const std::map<std::string, double>& args) const {
 		if (children.empty()) {
 			throw std::string("Function node not initialized with children");
 		}
@@ -176,7 +176,7 @@ namespace Gold {
 			throw std::string("Built in functions take only one argument");
 		    }
 		    else {
-			double value = (*(this->children[0]))(args);
+			double value = this->children[0]->evaluate(args);
 			return built_in_functions.at(get_token())(value);
 		    }
 		}
@@ -186,15 +186,15 @@ namespace Gold {
 		return 0;
 	    }
 
-	    double integer::operator()(const std::map<std::string, double>& args) const {
+	    double integer::evaluate(const std::map<std::string, double>& args) const {
 		return token;
 	    }
 	    
-	    double number::operator()(const std::map<std::string, double>& args) const {
+	    double number::evaluate(const std::map<std::string, double>& args) const {
 		return token;
 	    }
 	    
-	    double variable::operator()(const std::map<std::string, double>& args) const {
+	    double variable::evaluate(const std::map<std::string, double>& args) const {
 		auto iter = args.find(token);
 		if (args.find(token) == args.end() ) {
 		    throw std::string("Variable not found\n");

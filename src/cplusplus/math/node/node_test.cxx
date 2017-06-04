@@ -52,19 +52,19 @@ TEST(Node, Constructors) {
 
 TEST(Evaluatation, Integer) {
     base_node::ptr root = std::make_unique<integer>(5);
-    ASSERT_EQ(5, (*root)());
+    ASSERT_EQ(5, root->evaluate());
 }
 
 TEST(Evaluation, Double) {
     base_node::ptr root = std::make_unique<number>(5.1);
-    ASSERT_EQ(5.1, (*root)());
+    ASSERT_EQ(5.1, root->evaluate());
 }
 
 TEST(Evaluation, Variable) {
     base_node::ptr root = std::make_unique<variable>("x");
     
     std::map<std::string, double> vars {{ "x", 5 }};
-    ASSERT_EQ(5, (*root)(vars));
+    ASSERT_EQ(5, root->evaluate(vars));
 }
 
 TEST(Evaluation, Addition) {
@@ -73,7 +73,7 @@ TEST(Evaluation, Addition) {
 	vector.push_back(std::make_unique<integer>(i));
     }
     base_node::ptr root = std::make_unique<add>(vector);
-    EXPECT_EQ(10, (*root)());
+    EXPECT_EQ(10, root->evaluate());
 }
 	
 TEST(Evaluation, Multiplication) {
@@ -82,28 +82,28 @@ TEST(Evaluation, Multiplication) {
 	vector.push_back(std::make_unique<integer>(i));
     }
     base_node::ptr root = std::make_unique<multiply>(vector);
-    EXPECT_EQ(24, (*root)());
+    EXPECT_EQ(24, root->evaluate());
 }
 
 TEST(Evaluation, Exponentiation) {
     base_node::ptr root = std::make_unique<power>(integer(2), integer(3));
-    EXPECT_EQ(8, (*root)());
+    EXPECT_EQ(8, root->evaluate());
 }
 
 TEST(Evaluation, Inverse) {
     base_node::ptr x = std::make_unique<integer>(5);
     base_node::ptr root = inverse::make_inverse(*x);
-    EXPECT_EQ(.2, (*root)());
+    EXPECT_EQ(.2, root->evaluate());
 }
 
 TEST(Evaluation, Quotient) {
     base_node::ptr root = std::make_unique<quotient>(integer(5),integer(10));
-    EXPECT_EQ(.5, (*root)());
+    EXPECT_EQ(.5, root->evaluate());
 }
 
 TEST(Evaluation, Rational) {
     base_node::ptr root = std::make_unique<rational>(integer(5),integer(10));
-    EXPECT_EQ(.5, (*root)());
+    EXPECT_EQ(.5, root->evaluate());
 }
 
 TEST(Evaluation, Function) {
@@ -111,8 +111,8 @@ TEST(Evaluation, Function) {
     base_node::vec x_vec;
     x_vec.push_back(std::move(x));
     base_node::ptr root = std::make_unique<function>("Abs", x_vec);
-    EXPECT_EQ(5, (*root)( {{"x", 5}}));
-    EXPECT_EQ(5, (*root)( {{"x", -5}}));
+    EXPECT_EQ(5, root->evaluate( {{"x", 5}}));
+    EXPECT_EQ(5, root->evaluate( {{"x", -5}}));
 }
 
 
