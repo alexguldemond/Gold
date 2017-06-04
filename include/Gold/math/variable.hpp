@@ -1,7 +1,7 @@
 #ifndef VARIABLE_HPP
 #define VARIABLE_HPP
 
-#include "Gold/math/expression/expression.hpp"
+#include "Gold/math/expression.hpp"
 
 namespace Gold {
     namespace math {

@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "Gold/math/node/node.hpp"
+#include "Gold/math/node.hpp"
 
 using namespace Gold::math::node;
 

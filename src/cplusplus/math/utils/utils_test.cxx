@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "Gold/math/utils/utils.hpp"
+#include "Gold/math/utils.hpp"
 
 using namespace Gold::math::utils;
 

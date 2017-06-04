@@ -7,8 +7,8 @@
 #include <functional>
 #include <vector>
 #include <exception>
-#include "Gold/math/node/node.hpp"
-#include "Gold/math/utils/utils.hpp"
+#include "Gold/math/node.hpp"
+#include "Gold/math/utils.hpp"
 
 namespace Gold {
     namespace math {
