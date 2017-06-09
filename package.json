@@ -6,7 +6,7 @@
   "scripts": {
     "prebuild": "cmake-js configure",
     "build": "make -C build -j4",
-    "test": "npm run build && cd build && ctest",
+    "test": "cd build && ctest",
     "precoverage": "cmake-js configure --debug",
     "coverage": "make -C build -j4 && make -C build coverage"
   },
