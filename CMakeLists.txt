@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
 
 # Download and unpack googletest at configure time
-configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
+configure_file(.CMakeLists.txt.in googletest-download/CMakeLists.txt)
 execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
   RESULT_VARIABLE result
   WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/googletest-download )
@@ -24,7 +24,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
                  ${CMAKE_BINARY_DIR}/googletest-build)
 
-project(Gold)
+project(goldjs)
 
 enable_testing()
 set(GOLD_CPLUSPLUS_HOME ${PROJECT_SOURCE_DIR}/src/cplusplus)
@@ -65,9 +65,18 @@ add_executable(math_function_test ${MATH_HOME}/function/function_test.cxx $<TARG
 target_link_libraries(math_function_test gtest_main)
 add_test(NAME math_function_test COMMAND math_function_test)
 
-if(CMAKE_COMPILER_IS_GNUCXX AND CMAKE_BUILD_TYPE STREQUAL "Coverage")
+# Setup coverage
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeModules)
   include(CodeCoverage)
-  set(LCOV_REMOVE_EXTRA "'include/gtest/*'")
-  setup_target_for_coverage(coverage ctest coverage)
+  APPEND_COVERAGE_COMPILER_FLAGS()
+  set(COVERAGE_EXCLUDES '*gtest*' '*boost'* '*c++*' )
+  setup_target_for_coverage(NAME coverage EXECUTABLE ctest)
 endif()
+
+# Node Bindings
+include_directories(${CMAKE_JS_INC})
+set(BINDINGS src/cplusplus/node_bindings/hello.cpp)
+add_library(helloWorld SHARED ${BINDINGS})
+set_target_properties(helloWorld PROPERTIES PREFIX "" SUFFIX ".node")
+target_link_libraries(helloWorld ${CMAKE_JS_LIB})
