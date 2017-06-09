@@ -1,3 +1,6 @@
+#ifndef GOLD_MATH_FUNCTION
+#define GOLD_MATH_FUNCTION
+
 #include "Gold/math/expression.hpp"
 #include "Gold/math/variable.hpp"
 
@@ -24,3 +27,5 @@ namespace Gold {
 	};
     }
 }
+
+#endif
