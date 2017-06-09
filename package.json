@@ -4,7 +4,11 @@
   "description": "Symbolic algebra and calculus",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prebuild": "cmake-js configure",
+    "build": "make -C build -j4",
+    "test": "npm run build && cd build && ctest",
+    "precoverage": "cmake-js configure --debug",
+    "coverage": "make -C build -j4 && make -C build coverage"
   },
   "repository": {
     "type": "git",
