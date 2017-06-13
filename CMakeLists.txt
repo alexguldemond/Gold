@@ -73,10 +73,3 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
   set(COVERAGE_EXCLUDES '*gtest*' '*boost'* '*c++*' )
   setup_target_for_coverage(NAME coverage EXECUTABLE ctest)
 endif()
-
-# Node Bindings
-include_directories(${CMAKE_JS_INC})
-set(BINDINGS src/cplusplus/node_bindings/hello.cpp)
-add_library(helloWorld SHARED ${BINDINGS})
-set_target_properties(helloWorld PROPERTIES PREFIX "" SUFFIX ".node")
-target_link_libraries(helloWorld ${CMAKE_JS_LIB})
