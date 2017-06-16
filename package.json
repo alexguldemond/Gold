@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/alexguldemond/Gold#readme",
   "dependencies": {
-    "cmake-js": "^3.4.1"
+    "cmake-js": "^3.4.1",
+    "node-gyp": "^3.6.2"
   }
 }
