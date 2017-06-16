@@ -4,8 +4,7 @@
   "description": "Symbolic algebra and calculus",
   "main": "index.js",
   "scripts": {
-    "prebuild": "cmake-js configure",
-    "build": "make -C build -j4",
+    "build": "node-gyp configure && node-gyp build",
     "test": "cd build && ctest",
     "precoverage": "cmake-js configure --debug",
     "coverage": "make -C build -j4 && make -C build coverage"
