@@ -13,8 +13,6 @@ addons:
     packages:
       - gcc-4.9
       - g++-4.9
-      - cmake
-      - lcov
       - libboost-all-dev
 script:
   # Link gcc-6 and g++-6 to their standard commands
@@ -22,9 +20,8 @@ script:
   # Export CC and CXX to tell cmake which compiler to use
   - export CC=/usr/bin/gcc-4.9
   - export CXX=/usr/bin/g++-4.9
-  # Check versions of gcc, g++ and cmake
-  - gcc -v && g++ -v && cmake --version
+  # Check versions of gcc and g++ 
+  - gcc -v && g++ -v 
   - ls -l
-  - cmake .
-  - make
-  - ctest
+  - npm install
+  - npm test
