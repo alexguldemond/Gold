@@ -4,11 +4,10 @@
   "description": "Symbolic algebra and calculus",
   "main": "index.js",
   "scripts": {
-    "prebuild": "cmake-js configure",
-    "build": "make -C build -j4",
-    "test": "cd build && ctest",
-    "precoverage": "cmake-js configure --debug",
-    "coverage": "make -C build -j4 && make -C build coverage"
+      "build": "node-gyp configure && node-gyp build",
+      "test": "build/Release/math_test",
+      "precoverage": "which lcov && which genhtml && lcov --directory build/Release/ --zerocounters",
+      "coverage": "npm run test && lcov --directory . --capture --output-file build/coverage.info && lcov --remove build/coverage.info '*boost*' '*googletest*' '*4.9*' --output-file build/coverage.info.cleaned && genhtml -o build/coverage build/coverage.info.cleaned"
   },
   "repository": {
     "type": "git",
@@ -27,6 +26,6 @@
   },
   "homepage": "https://github.com/alexguldemond/Gold#readme",
   "dependencies": {
-    "cmake-js": "^3.4.1"
+    "node-gyp": "^3.6.2"
   }
 }
