@@ -8,6 +8,7 @@
 #include <functional>
 #include <cmath>
 #include <map>
+#include <iostream>
 
 namespace Gold {
     namespace math {
@@ -98,6 +99,30 @@ namespace Gold {
 			    return iter->is_zero();
 			});
 		}
+		virtual bool is_one() const {
+		    int negative_one_count = 0;
+		    for (auto iter = children.begin(); iter != children.end(); iter++) {
+			if ( (*iter)->is_minus_one() ) {
+			    negative_one_count++;
+			}
+			else if ( !(*iter)->is_one() ) {
+			    return false;
+			}
+		    }
+		    return (negative_one_count & 1) == 0;
+		}
+		virtual bool is_minus_one() const {
+		    int negative_one_count = 0;
+		    for (auto iter = children.begin(); iter != children.end(); iter++) {
+			if ( (*iter)->is_minus_one() ) {
+			    negative_one_count++;
+			}
+			else if ( !(*iter)->is_one() ) {
+			    return false;
+			}
+		    }
+		    return (negative_one_count & 1) == 1;
+		}    
 		virtual std::string get_token() const { return "*"; }
 		virtual double evaluate(const std::map<std::string, double>& args = { }) const;
 		virtual std::string string() const;
@@ -118,10 +143,19 @@ namespace Gold {
 		virtual power* clone() const { return new power(*this); }
 		virtual ~power() { }
 		virtual bool is_zero() const { return this->base()->is_zero(); }
-		virtual bool is_one() const { return this->exponent()->is_zero(); }
+		virtual bool is_one() const { 
+		    auto base = this->base();
+		    auto expo = this->exponent();
+		    return (expo->is_zero() && !base->is_zero()) || base->is_one();
+		}
+		virtual bool is_minus_one() const {
+		    auto exponent = this->exponent();
+		    return this->base()->is_minus_one() && ( exponent->is_one() || exponent->is_minus_one() );
+		}
 		virtual bool is_undefined() const { 
+		    auto exponent = this->exponent();
 		    return base_node::is_undefined() || 
-			( this->base()->is_zero() && this->exponent()->is_zero() ) ;
+			( this->base()->is_zero() && (exponent->is_zero() || exponent->is_minus_one())) ;
 		}
 		virtual std::string get_token() const { return "^"; }
 		virtual base_node::ptr base() const;
@@ -289,6 +323,7 @@ namespace Gold {
 		virtual inverse* clone() const { return new inverse(*this); }
 		virtual ~inverse() { }
 		virtual bool is_one() const { return this->denominator()->is_one(); }
+		virtual bool is_zero() const { return false; }
 		virtual bool is_minus_one() const { return this->denominator()->is_minus_one(); }
 		virtual bool is_undefined() const { return this->denominator()->is_zero(); }
 		virtual base_node::ptr numerator() const { return std::make_unique<integer>(1); }

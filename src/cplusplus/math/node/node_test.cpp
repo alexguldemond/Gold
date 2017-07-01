@@ -214,3 +214,199 @@ TEST(MakeString, Quotient) {
     base_node::ptr root = make_tree("y/x");
     EXPECT_EQ("y*x^(-1)", root->string());
 }
+
+TEST(Is, Add) {
+    base_node::ptr root = make_tree("a+b");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+}
+
+TEST(Is, Multiply) {
+    base_node::ptr root = make_tree("a*b");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+    
+    root = make_tree("a*b*0");
+    EXPECT_TRUE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("1*1*1*(-1)*(-1)");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_TRUE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("1*1*(-1)*(-1)*(-1)");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_TRUE(root->is_minus_one());
+}
+
+TEST(Is, Power) {
+    base_node::ptr root = make_tree("a^b");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("0^b");
+    EXPECT_TRUE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("a^0");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_TRUE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("1^b");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_TRUE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("(-1)^1");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_TRUE(root->is_minus_one());
+}
+
+TEST(Is, Function) {
+    auto root = make_tree("F[a,b]");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+}
+
+TEST(Is, Integer) {
+    auto root = make_tree("3");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("0");
+    EXPECT_TRUE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("1");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_TRUE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+    
+    root = make_tree("-1");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_TRUE(root->is_minus_one());
+}
+
+TEST(Is, Number) {
+    auto root = make_tree("3.0");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("0.0");
+    EXPECT_TRUE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("1.0");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_TRUE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+    
+    root = make_tree("-1.0");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_TRUE(root->is_minus_one());
+}
+
+TEST(Is, Variable) {
+    auto root = make_tree("a");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+}
+
+TEST(Is, Inverse) {
+    auto root = inverse::make_inverse(*(make_tree("a")));
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = inverse::make_inverse(*(make_tree("1")));
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_TRUE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = inverse::make_inverse(*(make_tree("-1")));
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_TRUE(root->is_minus_one());
+
+    root = inverse::make_inverse(*(make_tree("0")));
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+}
+
+TEST(Is, Quotient) {
+    auto root = make_tree("a/b");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("1/1");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_TRUE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+
+    root = make_tree("(-1)/1");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_TRUE(root->is_minus_one());
+    
+    root = make_tree("1/(-1)");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_TRUE(root->is_minus_one());
+   
+    root = make_tree("(-1)/(-1)");
+    EXPECT_FALSE(root->is_zero());
+    EXPECT_TRUE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+    
+    root = make_tree("0/b");
+    EXPECT_TRUE(root->is_zero());
+    EXPECT_FALSE(root->is_one());
+    EXPECT_FALSE(root->is_minus_one());
+}
+
+TEST(IsUndefined, FalseCases) {
+    auto root = make_tree("a+b/(c^2)");
+    EXPECT_FALSE(root->is_undefined());
+    
+    root = make_tree("a+b/(c^d)+0/1");
+    EXPECT_FALSE(root->is_undefined());
+}
+
+TEST(IsUndefined, TrueCases) {
+    auto root = make_tree("0/0");
+    EXPECT_TRUE(root->is_undefined());
+
+    root = make_tree("a/0");
+    EXPECT_TRUE(root->is_undefined());
+
+    root = make_tree("0^0");
+    EXPECT_TRUE(root->is_undefined());
+    
+    root = make_tree("a+b/(c^2)+0/0");
+    EXPECT_TRUE(root->is_undefined());
+    
+    root = make_tree("a+b/(c^d)+1/0");
+    EXPECT_TRUE(root->is_undefined());
+
+    root = make_tree("a+0^0");
+    EXPECT_TRUE(root->is_undefined());
+}
