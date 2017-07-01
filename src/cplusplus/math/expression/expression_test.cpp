@@ -22,16 +22,16 @@ TEST(Expression, Constructors) {
 
 TEST(Evaluation, Sucess) {
     expression expr("a+b^2");
-    EXPECT_EQ(5, expr( {{ "a", 1}, {"b", 2}}) );
-    EXPECT_EQ(5, expr( {{ "a", 1}, {"b", -2}}) );
+    EXPECT_EQ(5, expr.evaluate( {{ "a", 1}, {"b", 2}}) );
+    EXPECT_EQ(5, expr.evaluate( {{ "a", 1}, {"b", -2}}) );
     
     expr = expression("a/(b*c)");
-    EXPECT_EQ( 0, expr({{"a", 0}, {"b", 10}, {"c", 20}} ));
-    EXPECT_EQ(2, expr({{"a", 20}, {"b", 2}, {"c", 5}}));
+    EXPECT_EQ( 0, expr.evaluate({{"a", 0}, {"b", 10}, {"c", 20}} ));
+    EXPECT_EQ(2, expr.evaluate({{"a", 20}, {"b", 2}, {"c", 5}}));
     
     expr = expression("a/(b*-c)");
-    EXPECT_EQ( 0, expr({{"a", 0}, {"b", 10}, {"c", 20}} ));
-    EXPECT_EQ(-2, expr({{"a", 20}, {"b", 2}, {"c", 5}}));
+    EXPECT_EQ( 0, expr.evaluate({{"a", 0}, {"b", 10}, {"c", 20}} ));
+    EXPECT_EQ(-2, expr.evaluate({{"a", 20}, {"b", 2}, {"c", 5}}));
 }
 
 TEST(Addition, TwoAddNodes) {

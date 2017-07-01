@@ -25,8 +25,8 @@ namespace Gold {
 	    expression& operator=(const expression& other);
 	    expression& operator=(expression&& other);
 
-	    virtual double operator()(const std::map<std::string, double>& args = {}) const;
-	    virtual expression operator()(const std::map<std::string, expression>& args) const; 
+	    virtual double evaluate(const std::map<std::string, double>& args = {}) const;
+	    virtual expression operator()(const std::map<std::string, expression>& args = {}) const; 
 	    virtual bool defined() const;
 	    virtual std::string string() const { 
 		if (string_value == "") {

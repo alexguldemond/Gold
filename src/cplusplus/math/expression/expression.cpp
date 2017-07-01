@@ -46,7 +46,7 @@ namespace Gold {
 	    return *this;
 	}
 	
-	double expression::operator()(const std::map<std::string, double>& args) const {
+	double expression::evaluate(const std::map<std::string, double>& args) const {
 	    if (!defined()) {
 		throw std::string("Undefined evaluation");
 	    }
@@ -196,6 +196,6 @@ namespace Gold {
 	    result.root = std::move(derivative);
 	    return result;
 	}
-
+	
     }
 }

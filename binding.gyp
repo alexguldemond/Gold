@@ -49,6 +49,27 @@
 		'-fprofile-arcs',
 	    ],
 	},
+	{
+	    'target_name': 'binding',
+	    'sources': [
+                'src/cplusplus/math/utils/utils.cpp',
+                'src/cplusplus/math/node/node.cpp',
+                'src/cplusplus/math/expression/expression.cpp',
+	    	'src/cplusplus/bindings/expression.cpp'
+	    ],
+	    "include_dirs" : [
+		"<!(node -e \"require('nan')\")",
+		"<!(node -e \"require('v8pp')\")",
+                'include'
+	    ],
+            'cflags_cc': [
+	    	'-Wall',
+		'-Werror',
+                '-O3',
+                '--std=c++1y'
+            ],
+	    'cflags_cc!': [ '-fno-exceptions' ],
+	}
     ]
 }
 	    

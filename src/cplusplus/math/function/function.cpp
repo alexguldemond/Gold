@@ -22,7 +22,7 @@ namespace Gold {
 	    for (std::size_t i = 0; i != values.size(); i++) {
 		changes.insert( std::pair<std::string, double>(this->variables[i].string(), values[i]) );
 	    }
-	    return rule(changes);	    
+	    return rule.evaluate(changes);	    
 	}   
     }
 }
