@@ -1,4 +1,4 @@
 # gold-code-base
-C++ math classes and python wrappers for them.
-This is mostly an academic exercise
-Testing a push again
+[![Build Status](https://travis-ci.org/alexguldemond/Gold.svg?branch=master)](https://travis-ci.org/alexguldemond/Gold)
+
+C++ math classes and nodejs bindings for them
