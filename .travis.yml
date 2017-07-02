@@ -7,6 +7,8 @@ language:
 compiler:
   - gcc
 addons:
+  sonarcloud:
+    oraganization: alexguldemond-github
   apt:
     sources:
       - ubuntu-toolchain-r-test
@@ -23,5 +25,6 @@ script:
   # Check versions of gcc and g++ 
   - gcc -v && g++ -v 
   - ls -l
+  - sonar-scanner
   - npm install
   - npm test
