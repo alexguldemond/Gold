@@ -13,7 +13,7 @@ addons:
       - master
       - sonar
     token:
-      secure: "zT3312J+rAquZ9BDxfaar7EyEiVrN0Ssq/2+dwiOP70I/O0rD4CLBbkBNQBHMttONS/5uRPdyvh6YiStZ2neGf5GqieyFsWmcBZhPojJCMb+nfJQrzwlmhbLNKYjYlqGOrKWC8HrkHDOlwMT9k1gzkUb/0R6W9TxHp5VcmoX6KUDAsxgT2u7uj0ynd7nsdZ6UivjRrKXC1jxX8VsveHDNjy+VWJSiqefLbYJV/Ilekn43QOKNodx7gti03+06ztZvcEe9rzTTxZUXK427hXjIYs6EGKPJovcjhU3Yl5lCoN6tz9mshTozAILjurNXIg5q+i0KTkTdbOLt5L3halcCwX14m/qAO0wF8r55PhUPnr2osVXyeJJ1OzP7IQSl5Or2lN+O74anQ5tb7Eppv/ahJxw9eSLRLW2dGZ1bkQYE706Z4C17CVuO4g9hLtRs9LgQypBFsnHrMOnuqjmUjYmou598V+rtnPEOQvh4aGoQKMPZ6tNBpG9fpNvFmQV+nIlnXf2TwvoaGWGIzUFw+BUmrOxsnOTZ186U15/HaoETnXsHXtULr6niAkyaTzb8rxxAOddF+8K4uVbHwlBj1QN1CI/c/Jl/hn6KZoyk9TMNrwbWuUJmaMyjMB/Zyjiqaf60JxHRvE7LAsm6KkoFLsjJ6newciVVK1YGREUaL0UFAE="
+      secure: "wt6NgJaiRs73CzKISHqX+7piQPxQfnjqo1SkoyDNnaWM/Now/xRkNOR4kZLLX0Z4zii1+q7rfiuVTezMTROwTtj/EFLJmu0t9OevPlwVM4SAKG4BKbyPTKVoCvQMsHwgvXOV3qZFEkKH1ODoP2H9woERyneKAXavyqv9Sj7+nMGBDv5hPLm1ZarxQ83Teb42hVJrhJ7SQnVLUefopSupTOUEPzPSuBcFgpzUrqQOBd37nNrGhjlf9reQmPdLTdHeLgltn10TBF60D9u6EZxel4FiWyuk4C2Na8YoA2VtZ4NAbuiqFudZ3oF+jrn++DcnKAtyhte9HbK20hHZeyLawHOUt2ewSr69piWJpu7ucyXCKZl+dfAs0qxisHDfSBGWKGDUfBWcwaSZVSChaIkm71W1N1Dwo/ZVKx9H5oUxYWBCoAEaWTf61V60hPVE5UwljSHRq9iquIiJoYo/rHnch6HbinxM2Z6EL8UxfKPItuKzNelyxSBNIyzG5ZK1sM6MNyRoTZSDCQM/KzHv6ejk5Gs3+6uYumFsG2tuJe7egERqfQhpLuFIyf7BP1US8x4DaKBxvowrDHMrObHC5x7fB1EJw+Kva7sy2ciPNXeT7ntUSzqh3gODzEWsRsab7wS3QBrKpw2QoazDj1oyZI50AQ4pC9zLaIxuuHk0XVLLxSI="
   apt:
     sources:
       - ubuntu-toolchain-r-test
@@ -29,7 +29,6 @@ script:
   - export CXX=/usr/bin/g++-4.9
   # Check versions of gcc and g++ 
   - gcc -v && g++ -v 
-  - ls -l
   - sonar-scanner
   - npm install
   - npm test
