@@ -28,7 +28,8 @@ script:
   - export CC=/usr/bin/gcc-4.9
   - export CXX=/usr/bin/g++-4.9
   # Check versions of gcc and g++ 
-  - gcc -v && g++ -v 
+  - gcc -v && g++ -v
+  - build-wrapper --out-dir build "npm install"
   - sonar-scanner
   - npm install
   - npm test
