@@ -29,7 +29,7 @@ script:
   - export CXX=/usr/bin/g++-4.9
   # Check versions of gcc and g++ 
   - gcc -v && g++ -v
-  - build-wrapper --out-dir build "npm install"
+  - build-wrapper-linux-x86-64 --out-dir bw-output make all
   - sonar-scanner
   - npm install
   - npm test
