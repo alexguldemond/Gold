@@ -31,5 +31,6 @@ script:
   - gcc -v && g++ -v
   - build-wrapper-linux-x86-64 --out-dir bw-output npm install
   - npm test -- --gtest_output=xml
+  - npm run coverage
   - sonar-scanner
 
