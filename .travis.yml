@@ -20,6 +20,8 @@ addons:
     packages:
       - gcc-4.9
       - g++-4.9
+      - lcov
+      - genhtml
       - libboost-all-dev
 script:
   # Link gcc-6 and g++-6 to their standard commands
@@ -31,6 +33,5 @@ script:
   - gcc -v && g++ -v
   - build-wrapper-linux-x86-64 --out-dir bw-output npm install
   - npm test -- --gtest_output=xml
-  - npm run coverage
   - sonar-scanner
 
