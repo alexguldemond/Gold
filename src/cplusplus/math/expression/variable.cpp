@@ -12,11 +12,16 @@ namespace Gold {
 	variable::variable(variable&& other) : expression(other) { }
 
 	variable& variable::operator=(const variable& other) {
-	    expression::operator=(other);
+	    if (&other != this) {
+		expression::operator=(other);
+	    }
 	    return *this;
 	}
 
 	variable& variable::operator=(variable&& other) {
+	    if (&other != this) {
+		expression::operator=(other);
+	    }
 	    expression::operator=(other);
 	    return *this;
 	}

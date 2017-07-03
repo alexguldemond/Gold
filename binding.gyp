@@ -40,7 +40,7 @@
 		'--coverage',
 		'-fprofile-arcs',
 		'-ftest-coverage',
-		'--std=c++1y',
+		'--std=c++14',
 	    ],
 	    'cflags!': [ '-fno-exceptions' ],
 	    'cflags_cc!': [ '-fno-exceptions' ],
@@ -66,7 +66,7 @@
 	    	'-Wall',
 		'-Werror',
                 '-O3',
-                '--std=c++1y'
+                '--std=c++14'
             ],
 	    'cflags_cc!': [ '-fno-exceptions' ],
 	}
