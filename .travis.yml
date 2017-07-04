@@ -7,6 +7,13 @@ language:
 compiler:
   - gcc
 addons:
+  sonarcloud:
+    oraganization: alexguldemond-github
+    branches:
+      - master
+      - sonar
+    token:
+      secure: "wt6NgJaiRs73CzKISHqX+7piQPxQfnjqo1SkoyDNnaWM/Now/xRkNOR4kZLLX0Z4zii1+q7rfiuVTezMTROwTtj/EFLJmu0t9OevPlwVM4SAKG4BKbyPTKVoCvQMsHwgvXOV3qZFEkKH1ODoP2H9woERyneKAXavyqv9Sj7+nMGBDv5hPLm1ZarxQ83Teb42hVJrhJ7SQnVLUefopSupTOUEPzPSuBcFgpzUrqQOBd37nNrGhjlf9reQmPdLTdHeLgltn10TBF60D9u6EZxel4FiWyuk4C2Na8YoA2VtZ4NAbuiqFudZ3oF+jrn++DcnKAtyhte9HbK20hHZeyLawHOUt2ewSr69piWJpu7ucyXCKZl+dfAs0qxisHDfSBGWKGDUfBWcwaSZVSChaIkm71W1N1Dwo/ZVKx9H5oUxYWBCoAEaWTf61V60hPVE5UwljSHRq9iquIiJoYo/rHnch6HbinxM2Z6EL8UxfKPItuKzNelyxSBNIyzG5ZK1sM6MNyRoTZSDCQM/KzHv6ejk5Gs3+6uYumFsG2tuJe7egERqfQhpLuFIyf7BP1US8x4DaKBxvowrDHMrObHC5x7fB1EJw+Kva7sy2ciPNXeT7ntUSzqh3gODzEWsRsab7wS3QBrKpw2QoazDj1oyZI50AQ4pC9zLaIxuuHk0XVLLxSI="
   apt:
     sources:
       - ubuntu-toolchain-r-test
@@ -21,7 +28,8 @@ script:
   - export CC=/usr/bin/gcc-4.9
   - export CXX=/usr/bin/g++-4.9
   # Check versions of gcc and g++ 
-  - gcc -v && g++ -v 
-  - ls -l
-  - npm install
-  - npm test
+  - gcc -v && g++ -v
+  - build-wrapper-linux-x86-64 --out-dir bw-output npm install
+  - npm run coverage:gcov
+  - sonar-scanner
+
