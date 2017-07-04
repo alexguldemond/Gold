@@ -1,5 +1,6 @@
 #include "Gold/bindings/expression.hpp"
 #include "v8pp/convert.hpp"
+#include <exception>
 
 std::map<std::string, Gold::math::expression> Expression::v8_object_to_map(v8::Isolate* isolate, const v8::Local<v8::Object>& object) {
     std::map<std::string, Gold::math::expression> map;
@@ -15,8 +16,8 @@ std::map<std::string, Gold::math::expression> Expression::v8_object_to_map(v8::I
 		std::string str = v8pp::from_v8<std::string>(isolate, object->Get(v8_key)->ToString());
 		value = Gold::math::expression(str);
 	    }
-	    catch (std::string& e) {
-		Nan::ThrowError(e.c_str());
+	    catch (std::exception& e) {
+		Nan::ThrowError(e.what());
 	    }
 	}
 	else if ( object->Get(v8_key)->IsInt32() ) {
@@ -29,8 +30,8 @@ std::map<std::string, Gold::math::expression> Expression::v8_object_to_map(v8::I
 	    try {
 		value = Gold::math::expression(num);
 	    }
-	    catch (std::string& e) {
-		Nan::ThrowError(e.c_str());
+	    catch (std::exception& e) {
+		Nan::ThrowError(e.what());
 	    }
 	}
 	else if ( object->Get(v8_key)->IsNumber() ) {
@@ -43,8 +44,8 @@ std::map<std::string, Gold::math::expression> Expression::v8_object_to_map(v8::I
 	    try {
 		value = Gold::math::expression(num);
 	    }
-	    catch (std::string& e) {
-		Nan::ThrowError(e.c_str());
+	    catch (std::exception& e) {
+		Nan::ThrowError(e.what());
 	    }
 	}
 	else if (object->Get(v8_key)->IsObject() ){
@@ -149,8 +150,8 @@ NAN_METHOD(Expression::evaluate) {
     try {
 	return_value = expression->expression->evaluate(map);
     }
-    catch (std::string& e) {
-	isolate->ThrowException(v8::Exception::TypeError(v8::String::NewFromUtf8(isolate, e.c_str())));
+    catch (std::exception& e) {
+	isolate->ThrowException(v8::Exception::TypeError(v8::String::NewFromUtf8(isolate, e.what())));
 	return;
     }
     info.GetReturnValue().Set(return_value);
@@ -165,8 +166,8 @@ NAN_METHOD(Expression::call) {
 	try {
 	    new_gold_expression = (*expression->expression)();
 	}
-	catch (std::string& e) {
-	    Nan::ThrowError(e.c_str());
+	catch (std::exception& e) {
+	    Nan::ThrowError(e.what());
 	    return;
 	}
     }
@@ -174,8 +175,8 @@ NAN_METHOD(Expression::call) {
 	try {
 	    new_gold_expression = (*expression->expression)(v8_object_to_map(isolate, info[0]->ToObject()));
 	}
-	catch (std::string& e) {
-	    Nan::ThrowError(e.c_str());
+	catch (std::exception& e) {
+	    Nan::ThrowError(e.what());
 	    return;
 	}
     }
