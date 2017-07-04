@@ -1,5 +1,5 @@
 #include "Gold/math/expression.hpp"
-#include <iostream>
+#include <stdexcept>
 
 namespace Gold {
     namespace math {
@@ -13,7 +13,7 @@ namespace Gold {
 	    str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
 	    str = utils::remove_enclosing_parens(str);
 	    if ( !utils::are_parens_matched(str) ) {
-		throw std::string("Mismatched parentheses");
+		throw std::logic_error("Mismatched parentheses");
 	    }
 	    root = node::make_tree(str);
 	}
@@ -50,7 +50,7 @@ namespace Gold {
 	
 	double expression::evaluate(const std::map<std::string, double>& args) const {
 	    if (!defined()) {
-		throw std::string("Undefined evaluation");
+		throw std::logic_error("Undefined evaluation");
 	    }
 	    return root->evaluate(args);
 	}
@@ -61,7 +61,7 @@ namespace Gold {
 	
         expression expression::operator()(const std::map<std::string, expression>& args) const {
 	    if (!defined()) {
-		throw std::string("Undefined evaulation");
+		throw std::logic_error("Undefined evaulation");
 	    }
 	    
 	    if (!std::all_of(args.begin(), args.end(),
@@ -69,7 +69,7 @@ namespace Gold {
 				 return Gold::math::utils::is_string_var(pair.first);
 			     })
 		) {
-		throw std::string("Passed in change is not a variable");
+		throw std::invalid_argument("Passed in change is not a variable");
 	    }
 
 	    if (std::any_of(args.begin(), args.end(), 
@@ -77,7 +77,7 @@ namespace Gold {
 				return !pair.second.defined();
 			    })
 		) {
-		throw std::string("Cannot use an undefined expression to change variables");
+		throw std::logic_error("Cannot use an undefined expression to change variables");
 	    }
 	    
 	    std::map<std::string, node::base_node::ptr> replacements;
@@ -93,17 +93,17 @@ namespace Gold {
 	    node::base_node::ptr left = node::base_node::ptr(lhs.root->clone());
 	    node::base_node::ptr right = node::base_node::ptr(rhs.root->clone());
 	    expression result;
-	    if (left->get_token() == "+" && right->get_token() == "+") {
+	    if (left->get_token() == operation && right->get_token() == operation) {
 		for (auto iter = right->children.begin(); iter != right->children.end(); iter++) {
 		    left->children.push_back(std::move(*iter));
 		}
 		result.root = std::move(left);
 	    }
-	    else if (left->get_token() == "+") {
+	    else if (left->get_token() == operation) {
 		left->children.push_back(std::move(right));
 		result.root = std::move(left);
 	    }
-	    else if (right->get_token() == "+") {
+	    else if (right->get_token() == operation) {
 		auto iter = right->children.begin();
 		right->children.insert(iter, std::move(left));
 		result.root = std::move(right);

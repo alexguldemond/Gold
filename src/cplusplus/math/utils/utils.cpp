@@ -2,10 +2,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <iostream> //Remove later, replace error messagas with exceptions
 #include <regex>
 #include <sstream>
 #include <stack>
+#include <stdexcept>
 
 namespace Gold {
     namespace math {
@@ -243,7 +243,7 @@ namespace Gold {
 
 	    bool is_binary(int index, const std::string& str) {
 		if (index < 0 || index >= (int)str.size()) {
-		    throw std::string("Index out of bounds");
+		    throw std::length_error("Index out of bounds");
 		}
 		if (index == 0) {
 		    return false;
@@ -310,7 +310,7 @@ namespace Gold {
 	    void break_string(std::string str, const std::string& operation, std::vector<std::string>& vector, bool invert) {
 		if (operation != "+" && operation != "-" &&
 		    operation != "*" && operation != "/") {
-		    throw operation + " can't be used to break the string";
+		    throw std::invalid_argument(operation + " can't be used to break the string");
 		}
 		str = remove_enclosing_parens(str);
 		int index = find_lowest_priority(str);

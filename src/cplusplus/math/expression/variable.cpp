@@ -1,4 +1,5 @@
 #include "Gold/math/variable.hpp"
+#include <stdexcept>
 
 namespace Gold {
     namespace math {
@@ -30,7 +31,7 @@ namespace Gold {
 
 	std::string variable::_check_variable(const std::string& str) {
 	    if (!utils::is_string_var(str)) {
-		throw std::string(str).append(" can't be used as a variable");
+		throw std::invalid_argument(std::string(str).append(" can't be used as a variable"));
 	    }
 	    return str;
 	}

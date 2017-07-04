@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "Gold/math/function.hpp"
 
 namespace Gold {
@@ -5,7 +6,7 @@ namespace Gold {
 	
 	expression function::operator()(const std::vector<expression>& replacements) {
 	    if (replacements.size() != this->variables.size() ) {
-		throw std::string("Incorrect number of variables");
+		throw std::length_error("Incorrect number of variables");
 	    }
 	    std::map<std::string, expression> changes;
 	    for (std::size_t i = 0; i != replacements.size(); i++) {
@@ -16,7 +17,7 @@ namespace Gold {
 
 	double function::evaluate(const std::vector<double>& values) {
 	    if (values.size() != this->variables.size() ) {
-		throw std::string("Incorrect number of variables");
+		throw std::length_error("Incorrect number of variables");
 	    }
 	    std::map<std::string, double> changes;
 	    for (std::size_t i = 0; i != values.size(); i++) {

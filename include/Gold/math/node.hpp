@@ -33,9 +33,9 @@ namespace Gold {
 		base_node(base_node&& other);
 		base_node& operator=(const base_node& other);
 		base_node& operator=(base_node&& other);
-		virtual base_node* clone() const  { throw std::string("base_node::clone Should not be called"); }
+		virtual base_node* clone() const=0;
 		virtual ~base_node() { }
-		virtual std::string get_token() const { throw std::string("base_node::token Should not be called"); }
+		virtual std::string get_token() const=0;
 		virtual bool is_zero() const { return false; }
 		virtual bool is_one() const { return false; }
 		virtual bool is_minus_one() const { return false; }
@@ -47,17 +47,15 @@ namespace Gold {
 			    });    
 		}
 		
-		virtual double evaluate(const std::map<std::string, double>& args = { }) const { 
-		    throw std::string("base_node::evaluate Should not be called"); 
-		}
+		virtual double evaluate(const std::map<std::string, double>& args = { }) const=0;
 		
 		virtual ptr numerator() const;
 		virtual ptr denominator() const;
 		virtual ptr base() const;
 		virtual ptr exponent() const;
-		virtual std::string string() const { throw std::string("base_node::string Shouldn't be called"); }
-		virtual ptr derivative(const std::string& var) const { throw std::string("basenode::derivative Shouldn't be called"); }
-		virtual ptr change_variables(const std::map<std::string, ptr>& changes) const { throw std::string("base_node::change_variables Shouldn't be called"); }
+		virtual std::string string() const=0;
+		virtual ptr derivative(const std::string& var) const=0;
+		virtual ptr change_variables(const std::map<std::string, ptr>& changes) const=0;
 		vec children;
 	    };
 
