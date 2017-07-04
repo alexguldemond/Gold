@@ -4,7 +4,9 @@
 namespace Gold {
     namespace math {
 	
-	expression::expression() { }
+	expression::expression() {
+	    //Intentionally empty
+	}
 	
 	expression::expression(const std::string& expr) {
 	    std::string str = expr;
@@ -86,10 +88,8 @@ namespace Gold {
 	    result.root = root->change_variables(replacements);
 	    return result;
 	}
-		
 
-
-	expression operator+(const expression& lhs, const expression& rhs) {
+	expression expression::commutative_operator(const expression& lhs, const expression& rhs, const std::string& operation) {
 	    node::base_node::ptr left = node::base_node::ptr(lhs.root->clone());
 	    node::base_node::ptr right = node::base_node::ptr(rhs.root->clone());
 	    expression result;
@@ -119,6 +119,10 @@ namespace Gold {
 	    return result;
 	}
 
+	expression operator+(const expression& lhs, const expression& rhs) {
+	    return expression::commutative_operator(lhs, rhs, "+");
+	}
+
 	expression operator-(const expression& expr) {
 	    node::base_node::ptr right = node::base_node::ptr(expr.root->clone());
 	    if (right->get_token() == "*") {
@@ -143,33 +147,7 @@ namespace Gold {
 	}
 
 	expression operator*(const expression& lhs, const expression& rhs) {
-	    node::base_node::ptr left = node::base_node::ptr(lhs.root->clone());
-	    node::base_node::ptr right = node::base_node::ptr(rhs.root->clone());
-	    expression result;
-	    if (left->get_token() == "*" && right->get_token() == "*") {
-		for (auto iter = right->children.begin(); iter != right->children.end(); iter++) {
-		    left->children.push_back(std::move(*iter));
-		}
-		result.root = std::move(left);
-	    }
-	    else if (left->get_token() == "*") {
-		left->children.push_back(std::move(right));
-		result.root = std::move(left);
-	    }
-	    else if (right->get_token() == "*") {
-		auto iter = right->children.begin();
-		right->children.insert(iter, std::move(left));
-		result.root = std::move(right);
-	    }
-	    else {
-		node::base_node::vec vector;
-		vector.reserve(2);
-		vector.push_back(std::move(left));
-		vector.push_back(std::move(right));
-		node::add::ptr newRoot = std::make_unique<node::add>(vector);
-		result.root = std::move(newRoot);
-	    }
-	    return result;
+	    return expression::commutative_operator(lhs, rhs, "*");
 	}
 	
 	expression operator/(const expression& lhs, const expression& rhs) {

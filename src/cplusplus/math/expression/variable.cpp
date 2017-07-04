@@ -3,7 +3,9 @@
 namespace Gold {
     namespace math {
 
-	variable::variable() { }
+	variable::variable() { 
+	    //Intentionally empty
+	}
 
 	variable::variable(const std::string& str) : expression(_check_variable(str)) { }
 

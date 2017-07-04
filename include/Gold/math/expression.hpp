@@ -43,6 +43,8 @@ namespace Gold {
 	    friend expression pow(const expression& lhs, const expression& rhs);
 	    friend expression derivative(const expression& expr,const std::string& var);
 	private:
+	    static expression commutative_operator(const expression& lhs, const expression& rhs, const std::string& operation);
+
 	    node::base_node::ptr root;
 	    mutable std::string string_value;
 	};
