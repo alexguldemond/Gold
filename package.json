@@ -9,7 +9,7 @@
     "test:xml": "build/Release/math_test --gtest_output=xml",
     "precoverage:html": "which lcov && which genhtml && lcov --directory build/Release/ --zerocounters",
     "coverage:html": "npm run test && lcov --directory . --capture --output-file build/coverage.info && lcov --remove build/coverage.info '*boost*' '*googletest*' '*4.9*' --output-file build/coverage.info.cleaned && genhtml -o build/coverage build/coverage.info.cleaned",
-    "coverage:xml": "npm run test && cd build && i=$(node ../bin/glob.js 'build/Release/**/*.o') && for f in $i; do gcov-4.9 -r $f; done;",
+    "coverage:xml": "npm run test && cd build && i=$(node ../bin/glob.js 'build/Release/**/*.o') && for f in $i; do gcov-4.9 -p -r $f; done;",
     "postcoverage:xml": "gcovr -r . -x --object-directory=build > coverage_report.xml"
 
   },
