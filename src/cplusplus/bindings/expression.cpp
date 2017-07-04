@@ -55,7 +55,8 @@ std::map<std::string, Gold::math::expression> Expression::v8_object_to_map(v8::I
 	else {
 	    Nan::ThrowTypeError("Invalid type passed in");
 	}
-	map.insert(std::pair<std::string, Gold::math::expression>(key, value));
+	std::pair<std::string, Gold::math::expression> pair(key, value);
+	map.insert(pair);
     }
     return map;
 }
