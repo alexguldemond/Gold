@@ -21,9 +21,6 @@ addons:
       - gcc-4.9
       - g++-4.9
       - libboost-all-dev
-      - python-pip
-install:
-  - sudo pip install gcovr
 script:
   # Link gcc-6 and g++-6 to their standard commands
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
@@ -33,7 +30,6 @@ script:
   # Check versions of gcc and g++ 
   - gcc -v && g++ -v
   - build-wrapper-linux-x86-64 --out-dir bw-output npm install
-  - npm run test:xml
-  - npm run coverage:xml
+  - npm run coverage:gcov
   - sonar-scanner
 
