@@ -31,9 +31,7 @@ script:
   # Check versions of gcc and g++ 
   - gcc -v && g++ -v
   - build-wrapper-linux-x86-64 --out-dir bw-output npm install
-  - npm test -- --gtest_output=xml
-  - npm run coverage
-  - wget https://raw.github.com/eriwen/lcov-to-cobertura-xml/master/lcov_cobertura/lcov_cobertura.py
-  - python lcov_cobertura.py build/coverage.info.cleaned
+  - npm run test:xml
+  - npm run coverage:xml
   - sonar-scanner
 

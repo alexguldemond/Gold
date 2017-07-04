@@ -16,7 +16,7 @@
 	    'target_name': 'math_test',
 	    'type': 'executable',
 	    'include_dirs': [
-		'src/cplusplus/vendor/googletest/googletest/include',
+                'src/cplusplus/vendor/googletest/googletest/include',
 		'include',
 	    ],
 	    'sources': [ 
@@ -25,11 +25,11 @@
 		'src/cplusplus/math/expression/variable.cpp',
 		'src/cplusplus/math/function/function.cpp',
 		'src/cplusplus/math/utils/utils.cpp',
-		'src/cplusplus/math/utils/utils_test.cpp',
-		'src/cplusplus/math/node/node_test.cpp',
-		'src/cplusplus/math/expression/expression_test.cpp',
-		'src/cplusplus/math/function/function_test.cpp',
-		'src/cplusplus/math/test/all_test.cxx',
+		'test/cplusplus/math/utils/utils.cpp',
+		'test/cplusplus/math/node/node.cpp',
+		'test/cplusplus/math/expression/expression.cpp',
+		'test/cplusplus/math/function/function.cpp',
+		'test/cplusplus/math/test.cxx',
 	    ],
 	    'dependencies': [ 'gtest' ],
 	    'cflags_cc': [
