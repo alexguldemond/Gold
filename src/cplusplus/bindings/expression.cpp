@@ -1,6 +1,6 @@
 #include "Gold/bindings/expression.hpp"
+#include "Gold/math/exception.hpp"
 #include "v8pp/convert.hpp"
-#include <exception>
 
 std::map<std::string, Gold::math::expression> Expression::v8_object_to_map(v8::Isolate* isolate, const v8::Local<v8::Object>& object) {
     std::map<std::string, Gold::math::expression> map;
@@ -16,7 +16,7 @@ std::map<std::string, Gold::math::expression> Expression::v8_object_to_map(v8::I
 		std::string str = v8pp::from_v8<std::string>(isolate, object->Get(v8_key)->ToString());
 		value = Gold::math::expression(str);
 	    }
-	    catch (std::exception& e) {
+	    catch (std::invalid_argument& e) {
 		Nan::ThrowError(e.what());
 	    }
 	}
@@ -30,7 +30,7 @@ std::map<std::string, Gold::math::expression> Expression::v8_object_to_map(v8::I
 	    try {
 		value = Gold::math::expression(num);
 	    }
-	    catch (std::exception& e) {
+	    catch (Gold::math::exception& e) {
 		Nan::ThrowError(e.what());
 	    }
 	}
@@ -44,7 +44,7 @@ std::map<std::string, Gold::math::expression> Expression::v8_object_to_map(v8::I
 	    try {
 		value = Gold::math::expression(num);
 	    }
-	    catch (std::exception& e) {
+	    catch (Gold::math::exception& e) {
 		Nan::ThrowError(e.what());
 	    }
 	}
@@ -150,7 +150,7 @@ NAN_METHOD(Expression::evaluate) {
     try {
 	return_value = expression->expression->evaluate(map);
     }
-    catch (std::exception& e) {
+    catch (Gold::math::exception& e) {
 	isolate->ThrowException(v8::Exception::TypeError(v8::String::NewFromUtf8(isolate, e.what())));
 	return;
     }
@@ -166,7 +166,7 @@ NAN_METHOD(Expression::call) {
 	try {
 	    new_gold_expression = (*expression->expression)();
 	}
-	catch (std::exception& e) {
+	catch (Gold::math::exception& e) {
 	    Nan::ThrowError(e.what());
 	    return;
 	}
@@ -175,7 +175,7 @@ NAN_METHOD(Expression::call) {
 	try {
 	    new_gold_expression = (*expression->expression)(v8_object_to_map(isolate, info[0]->ToObject()));
 	}
-	catch (std::exception& e) {
+	catch (Gold::math::exception& e) {
 	    Nan::ThrowError(e.what());
 	    return;
 	}

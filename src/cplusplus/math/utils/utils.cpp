@@ -1,11 +1,11 @@
 #include "Gold/math/utils.hpp"
+#include "Gold/math/exception.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
 #include <regex>
 #include <sstream>
 #include <stack>
-#include <stdexcept>
 
 namespace Gold {
     namespace math {
@@ -310,7 +310,7 @@ namespace Gold {
 	    void break_string(std::string str, const std::string& operation, std::vector<std::string>& vector, bool invert) {
 		if (operation != "+" && operation != "-" &&
 		    operation != "*" && operation != "/") {
-		    throw std::invalid_argument(operation + " can't be used to break the string");
+		    throw invalid_operation(operation + " can't be used to break the string");
 		}
 		str = remove_enclosing_parens(str);
 		int index = find_lowest_priority(str);

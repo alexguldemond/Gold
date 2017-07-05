@@ -1,12 +1,12 @@
 #include "Gold/math/node.hpp"
 #include "Gold/math/utils.hpp"
+#include "Gold/math/exception.hpp"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <cmath>
 #include <iostream>
 #include <iterator>
-#include <stdexcept>
 
 namespace Gold {
     namespace math {
@@ -79,7 +79,7 @@ namespace Gold {
 
 	    base_node::ptr inverse::denominator() const {
 		if (children.size() != 2) {
-		    throw std::logic_error("inverse node not initialized correctly");
+		    throw invalid_node("inverse node not initialized correctly");
 		}
 		return base_node::ptr(children[0]->clone());
 	    }
@@ -93,14 +93,14 @@ namespace Gold {
 
 	    base_node::ptr quotient::numerator() const { 
 		if (children.size() != 2) {
-		    throw std::logic_error("Quotient node not initialized correctly");
+		    throw invalid_node("Quotient node not initialized correctly");
 		}
 		return base_node::ptr( children[0]->clone() ); 
 	    }
 	    
 	    base_node::ptr quotient::denominator() const { 
 		if (children.size() != 2 || children[1]->children.size() != 2) {
-		    throw std::logic_error("Quotient node not initialized correctly");
+		    throw invalid_node("Quotient node not initialized correctly");
 		}
 		return base_node::ptr( children[1]->children[0]->clone() );
 	    }
@@ -119,7 +119,7 @@ namespace Gold {
 	     ************************************************/
 	    double add::evaluate(const std::map<std::string, double>& args) const {
 		if (children.empty()) {
-			throw std::logic_error("Add node not initialized with children");
+			throw invalid_node("Add node not initialized with children");
 		}
 		double sum = 0;
 		for (auto iter = children.begin(); iter != children.end(); iter++) {
@@ -130,7 +130,7 @@ namespace Gold {
 
 	    double multiply::evaluate(const std::map<std::string, double>& args) const {
 		if (children.empty()) {
-			throw std::logic_error("multiply node not initialized with children");
+			throw invalid_node("multiply node not initialized with children");
 		}
 		double product = 1;
 		for (auto iter = children.begin(); iter != children.end(); iter++) {
@@ -147,21 +147,21 @@ namespace Gold {
 
 	    base_node::ptr power::base() const { 
 		if (children.empty()) {
-		    throw std::logic_error("Power node not initialized with children");
+		    throw invalid_node("Power node not initialized with children");
 		}
 		return base_node::ptr( children[0]->clone() ); 
 	    }
 
 	    base_node::ptr power::exponent() const {
 		if (children.empty()) {
-		    throw std::logic_error("Power node not initialized with children");
+		    throw invalid_node("Power node not initialized with children");
 		}
 		return base_node::ptr( children[1]->clone() ); 
 	    }
 
 	    double power::evaluate(const std::map<std::string, double>& args) const {
 		if (children.size() != 2) {
-			throw std::logic_error("Power node initialized with more or less than two children");
+			throw invalid_node("Power node initialized with more or less than two children");
 		}
 		double base = this->base()->evaluate(args);
 		double expo = this->exponent()->evaluate(args);	
@@ -170,11 +170,11 @@ namespace Gold {
 
 	    double function::evaluate(const std::map<std::string, double>& args) const {
 		if (children.empty()) {
-			throw std::logic_error("Function node not initialized with children");
+			throw invalid_node("Function node not initialized with children");
 		}
 		if ( built_in_functions.find(get_token()) != built_in_functions.end()) {
 		    if (children.size() != 1) {
-			throw std::logic_error("Built in functions take only one argument");
+			throw invalid_node("Built in functions take only one argument");
 		    }
 		    else {
 			double value = this->children[0]->evaluate(args);
@@ -182,7 +182,7 @@ namespace Gold {
 		    }
 		}
 		else {
-		    throw std::logic_error(get_token().append(" not found in functions"));
+		    throw std::invalid_argument(get_token().append(" not found in functions"));
 		}
 		return 0;
 	    }
@@ -198,7 +198,7 @@ namespace Gold {
 	    double variable::evaluate(const std::map<std::string, double>& args) const {
 		auto iter = args.find(token);
 		if (args.find(token) == args.end() ) {
-		    throw std::logic_error("Variable not found\n");
+		    throw std::invalid_argument("Variable not found\n");
 		}
 		return iter->second;
 	    }
@@ -265,7 +265,7 @@ namespace Gold {
 
 	    base_node::ptr add::derivative(const std::string& var) const {
 		if (is_undefined()) {
-		    throw std::logic_error("Node is undefined, cannot take derivative");
+		    throw invalid_node("Node is undefined, cannot take derivative");
 		}
 		base_node::vec derivative_vector;
 		derivative_vector.reserve(children.size());
@@ -280,7 +280,7 @@ namespace Gold {
 
 	    base_node::ptr multiply::derivative(const std::string& var) const {
 		if (is_undefined()) {
-		    throw std::logic_error("Node is undefined, cannot take derivative");
+		    throw invalid_node("Node is undefined, cannot take derivative");
 		}
 		if (is_zero() || is_one() || is_minus_one()) {
 		    return std::make_unique<integer>(0);
@@ -310,7 +310,7 @@ namespace Gold {
 
 	    base_node::ptr power::derivative(const std::string& var) const {
 		if (is_undefined()) {
-		    throw std::logic_error("Power node is undefined");
+		    throw invalid_node("Power node is undefined");
 		}
 		if (is_zero() || is_one() || is_minus_one()) {
 		    return std::make_unique<integer>(0);
@@ -367,15 +367,15 @@ namespace Gold {
 
 	    base_node::ptr function::derivative(const std::string& var) const {
 		if (is_undefined()) {
-		    throw std::logic_error("Functioned node is undefined");
+		    throw invalid_node("Functioned node is undefined");
 		}
 		
 		if (this->children.size() != 1) {
-		    throw std::logic_error("Not implemented yet");
+		    throw std::invalid_argument("Not implemented yet");
 		}
 		
 		if (built_in_derivatives.find(this->get_token()) == built_in_derivatives.end()) {
-		    throw std::logic_error(std::string("Derivative not implemented for ").append(get_token()));
+		    throw std::invalid_argument(std::string("Derivative not implemented for ").append(get_token()));
 		}
 
 		base_node::ptr derivative = base_node::ptr(built_in_derivatives.at(this->get_token())->clone());

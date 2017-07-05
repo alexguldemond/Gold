@@ -1,4 +1,5 @@
 #include "Gold/math/expression.hpp"
+#include "Gold/math/exception.hpp"
 #include <stdexcept>
 
 namespace Gold {
@@ -13,7 +14,8 @@ namespace Gold {
 	    str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
 	    str = utils::remove_enclosing_parens(str);
 	    if ( !utils::are_parens_matched(str) ) {
-		throw std::logic_error("Mismatched parentheses");
+		str = expr;
+		throw invalid_expression(str.append(" has mismatched parentheses"));
 	    }
 	    root = node::make_tree(str);
 	}
@@ -50,7 +52,7 @@ namespace Gold {
 	
 	double expression::evaluate(const std::map<std::string, double>& args) const {
 	    if (!defined()) {
-		throw std::logic_error("Undefined evaluation");
+		throw undefined_expression("Undefined evaluation");
 	    }
 	    return root->evaluate(args);
 	}
@@ -61,7 +63,7 @@ namespace Gold {
 	
         expression expression::operator()(const std::map<std::string, expression>& args) const {
 	    if (!defined()) {
-		throw std::logic_error("Undefined evaulation");
+		throw undefined_expression("Undefined evaulation");
 	    }
 	    
 	    if (!std::all_of(args.begin(), args.end(),
@@ -69,7 +71,7 @@ namespace Gold {
 				 return Gold::math::utils::is_string_var(pair.first);
 			     })
 		) {
-		throw std::invalid_argument("Passed in change is not a variable");
+		throw invalid_variable("Passed in change is not a variable");
 	    }
 
 	    if (std::any_of(args.begin(), args.end(), 
@@ -77,7 +79,7 @@ namespace Gold {
 				return !pair.second.defined();
 			    })
 		) {
-		throw std::logic_error("Cannot use an undefined expression to change variables");
+		throw undefined_expression("Cannot use an undefined expression to change variables");
 	    }
 	    
 	    std::map<std::string, node::base_node::ptr> replacements;
