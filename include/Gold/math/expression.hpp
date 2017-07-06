@@ -21,7 +21,8 @@ namespace Gold {
 	    explicit expression(double value) : expression(std::to_string(value)) { }
 	    expression(const expression& other);
 	    expression(expression&& other);
-	    virtual ~expression() { }
+	    virtual ~expression() { //Intentionally empty
+	    }
 	    expression& operator=(const expression& other);
 	    expression& operator=(expression&& other);
 

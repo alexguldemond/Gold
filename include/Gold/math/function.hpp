@@ -20,7 +20,8 @@ namespace Gold {
 	    function(const std::vector<variable>& vars, const expression& expr) : variables(vars), rule(expr) { }
 	    function(const std::vector<variable>& vars, expression&& expr) : variables(vars), rule(expr) { }
 
-	    virtual ~function() { }
+	    virtual ~function() { //Intentially empty
+	    }
 
 	    expression operator()(const std::vector<expression>& replacements);
 	    double evaluate(const std::vector<double>& values);

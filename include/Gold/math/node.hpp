@@ -26,15 +26,17 @@ namespace Gold {
 	    public:
 		typedef std::unique_ptr<base_node> ptr;
 		typedef std::vector<ptr> vec;
-		base_node() { }
-		base_node(const base_node::vec& _children);
-		base_node(base_node::vec&& _children);
-		base_node(const base_node& other);
-		base_node(base_node&& other);
+		base_node() { //Intentionally empty
+		}
+		explicit base_node(const base_node::vec& _children);
+		explicit base_node(base_node::vec&& _children);
+		explicit base_node(const base_node& other);
+		explicit base_node(base_node&& other);
 		base_node& operator=(const base_node& other);
 		base_node& operator=(base_node&& other);
 		virtual base_node* clone() const=0;
-		virtual ~base_node() { }
+		virtual ~base_node() { //Intentionally empty
+		}
 		virtual std::string get_token() const=0;
 		virtual bool is_zero() const { return false; }
 		virtual bool is_one() const { return false; }
@@ -62,16 +64,17 @@ namespace Gold {
 	    class add : public base_node {
 	    public:
 		typedef std::unique_ptr<add> ptr;
-		typedef std::unique_ptr<const add> c_ptr;
-		add() { }
-		add(const base_node::vec& _children) : base_node(_children) { }
-		add(base_node::vec&& _children) : base_node(_children) { }
-		add(const add& other) : base_node(other) { }
-		add(add&& other) : base_node(other) { }
+		add() { //Intentionally empty
+		}
+		explicit add(const base_node::vec& _children) : base_node(_children) { }
+		explicit add(base_node::vec&& _children) : base_node(_children) { }
+		explicit add(const add& other) : base_node(other) { }
+		explicit add(add&& other) : base_node(other) { }
 		add& operator=(const add& other) { base_node::operator=(other); return *this;}
 		add& operator=(add&& other) { base_node::operator=(other); return *this;}
 		virtual add* clone() const { return new add(*this); }
-		virtual ~add() { }
+		virtual ~add() { //Intentionally empty
+		}
 		virtual std::string get_token() const { return "+"; }
 		virtual double evaluate(const std::map<std::string, double>& args = { }) const;
 		virtual std::string string() const;
@@ -82,16 +85,17 @@ namespace Gold {
 	    class multiply : public base_node {
 	    public:
 		typedef std::unique_ptr<multiply> ptr;
-		typedef std::unique_ptr<const multiply> c_ptr;
-		multiply() { }
-		multiply(const base_node::vec& _children) : base_node(_children) { }
-		multiply(base_node::vec&& _children) : base_node(_children) { }
-		multiply(const multiply& other) : base_node(other) { }
-		multiply(multiply&& other) : base_node(other) { }
+		multiply() { //Intentionally empty
+		}
+		explicit multiply(const base_node::vec& _children) : base_node(_children) { }
+		explicit multiply(base_node::vec&& _children) : base_node(_children) { }
+		explicit multiply(const multiply& other) : base_node(other) { }
+		explicit multiply(multiply&& other) : base_node(other) { }
 		multiply& operator=(const multiply& other) { base_node::operator=(other); return *this;}
 		multiply& operator=(multiply&& other) { base_node::operator=(other); return *this;}
 		virtual multiply* clone() const { return new multiply(*this); }
-		virtual ~multiply() { }
+		virtual ~multiply() { //Intentionally empty
+		}
 		virtual bool is_zero() const {
 		    return std::any_of(children.begin(), children.end(), [](const base_node::ptr& iter) {
 			    return iter->is_zero();
@@ -131,15 +135,16 @@ namespace Gold {
 	    class power : public base_node {
 	    public:
 		typedef std::unique_ptr<power> ptr;
-		typedef std::unique_ptr<const power> c_ptr;
-		power() { }
-		power(const base_node& base, const base_node& exponent);
-		power(const power& other) : base_node(other) { }
-		power(power&& other) : base_node(other) { }
+		power() { //Intentionally empty
+		}
+		explicit power(const base_node& base, const base_node& exponent);
+		explicit power(const power& other) : base_node(other) { }
+		explicit power(power&& other) : base_node(other) { }
 		power& operator=(const power& other) { base_node::operator=(other); return *this;}
 		power& operator=(power&& other) { base_node::operator=(other); return *this;}
 		virtual power* clone() const { return new power(*this); }
-		virtual ~power() { }
+		virtual ~power() { //Intentionally empty
+		}
 		virtual bool is_zero() const { return this->base()->is_zero(); }
 		virtual bool is_one() const { 
 		    auto base = this->base();
@@ -169,8 +174,8 @@ namespace Gold {
 		std::string token;
 	    public:
 		typedef std::unique_ptr<function> ptr;
-		typedef std::unique_ptr<const function> c_ptr;
-		function() { }
+		function() { //Intentionally empty
+		}
 		function(const std::string& _token, const base_node::vec& _children={}) : base_node(_children), token(_token) { }
 		function(const std::string& _token, base_node::vec&& _children) : base_node(_children), token(_token) { }
 		function(const function& other) : base_node(other) {token = other.token; }
@@ -186,7 +191,8 @@ namespace Gold {
 		    return *this;
 		}
 		virtual function* clone() const { return new function(*this); }
-		virtual ~function() { }
+		virtual ~function() { //Intentionally empty
+		}
 		virtual std::string get_token() const { return token; }
 		virtual double evaluate(const std::map<std::string, double>& args = { }) const;
 		virtual std::string string() const;
@@ -199,8 +205,8 @@ namespace Gold {
 		int token;
 	    public:
 		typedef std::unique_ptr<integer> ptr;
-		typedef std::unique_ptr<const integer> c_ptr;
-		integer() { }
+		integer() { //Intentionally empty
+		}
 		explicit integer(const std::string& _token) : token(std::stoi(_token)) { }
 		explicit integer(int _token) : token(_token) { }
 		integer(const integer& other) : base_node(other) {token = other.token; }
@@ -216,7 +222,8 @@ namespace Gold {
 		    return *this;
 		}
 		virtual integer* clone() const { return new integer(*this); }
-		virtual ~integer() { }
+		virtual ~integer() { //Intentionally empty
+		}
 		virtual bool is_zero() const{ return token == 0; }
 		virtual bool is_one() const { return token == 1; }
 		virtual bool is_minus_one() const { return token == -1; }
@@ -235,8 +242,8 @@ namespace Gold {
 		double token;
 	    public:
 		typedef std::unique_ptr<number> ptr;
-		typedef std::unique_ptr<const number> c_ptr;
-		number() { }
+		number() { //Intentionally empty
+		}
 		explicit number(const std::string& _token) : token(std::stof(_token)) { }
 		explicit number(double _token = 0) : token(_token) { }
 		number(const number& other) : base_node(other) {token = other.token; }
@@ -252,7 +259,8 @@ namespace Gold {
 		    return *this;
 		}
 		virtual number* clone() const { return new number(*this); }
-		virtual ~number() { }
+		virtual ~number() { //Intentionally empty
+		}
 		virtual bool is_zero() const { return token == 0; }
 		virtual bool is_one() const { return token == 1; }
 		virtual bool is_minus_one() const { return token == -1; }
@@ -271,9 +279,9 @@ namespace Gold {
 		std::string token;
 	    public:
 		typedef std::unique_ptr<variable> ptr;
-		typedef std::unique_ptr<const variable> c_ptr;
-		variable() { }
-		variable(const std::string& _token) : token(_token) { }
+		variable() { //Intentionally empty
+		}
+		explicit variable(const std::string& _token) : token(_token) { }
 		variable(const variable& other) : base_node(other) {token = other.token; }
 		variable(variable&& other) : base_node(other) { token = other.token; }
 		variable& operator=(const variable& other) { 
@@ -287,7 +295,8 @@ namespace Gold {
 		    return *this;
 		}
 		virtual variable* clone() const { return new variable(*this); }
-		virtual ~variable() { }
+		virtual ~variable() { //Intentionally empty
+		}
 		virtual bool is_undefined() const { return false; }
 		virtual std::string get_token() const { return token; }
 		virtual double evaluate(const std::map<std::string, double>& args = { }) const;
@@ -306,8 +315,8 @@ namespace Gold {
 	    class inverse : public power {
 	    public:
 		typedef std::unique_ptr<inverse> ptr;
-		typedef std::unique_ptr<const inverse> c_ptr;
-		inverse() { }
+		inverse() { //Intentionally empty
+		}
 		inverse(const inverse& other) : power(other) { }
 		inverse(inverse&& other) : power(other) { }
 		inverse& operator=(const inverse& other) { 
@@ -319,7 +328,8 @@ namespace Gold {
 		    return *this;
 		}
 		virtual inverse* clone() const { return new inverse(*this); }
-		virtual ~inverse() { }
+		virtual ~inverse() { //Intentionally empty
+		}
 		virtual bool is_one() const { return this->denominator()->is_one(); }
 		virtual bool is_zero() const { return false; }
 		virtual bool is_minus_one() const { return this->denominator()->is_minus_one(); }
@@ -332,8 +342,8 @@ namespace Gold {
 	    class quotient : public multiply {
 	    public:
 		typedef std::unique_ptr<quotient> ptr;
-		typedef std::unique_ptr<const quotient> c_ptr;
-		quotient() { }
+		quotient() { //Intentionally empty
+		}
 		quotient(const base_node& numerator, const base_node& denominator);
 		quotient(const quotient& other) : multiply(other) { }
 		quotient(quotient&& other) : multiply(other) { }
@@ -346,7 +356,8 @@ namespace Gold {
 		    return *this;
 		}
 		virtual quotient* clone() const { return new quotient(*this); }
-		virtual ~quotient() { }
+		virtual ~quotient() { //Intentionally empty
+		}
 		
 		virtual bool is_one() {
 		    auto numerator = this->numerator();
@@ -357,7 +368,7 @@ namespace Gold {
 		virtual bool is_minus_one() { 
 		    auto numerator = this->numerator();
 		    auto denominator = this->denominator();
-		    return (denominator->is_one() && numerator->is_minus_one()) || (denominator->is_one() && numerator->is_minus_one());
+		    return (denominator->is_one() && numerator->is_minus_one()) || (denominator->is_minus_one() && numerator->is_one());
 		}
 
 		virtual bool is_undefined() { return this->denominator()->is_zero(); }
@@ -368,13 +379,14 @@ namespace Gold {
 	    class rational : public quotient {
 	    public:
 		typedef std::unique_ptr<rational> ptr;
-		typedef std::unique_ptr<const rational> c_ptr;
-		rational() { }
+		rational() { //Intentonally empty
+		}
 		rational(const integer& numerator, const integer& denominator) : quotient(numerator, denominator) { }
 		rational(int numerator, int denominator);
 		rational(const rational& other) : quotient(other) { }
 		rational(rational&& other) : quotient(other) { }
-		virtual ~rational() { }
+		virtual ~rational() { //Intentionally empty
+		}
 		rational& operator=(const rational& other) { 
 		    quotient::operator=(other);
 		    return *this;
@@ -395,18 +407,18 @@ namespace Gold {
 		{"Sin", sin},
 		{"Cos", cos},
 		{"Tan", tan},
-		{"Csc", [](double x) -> double { return 1/sin(x); }},
-		{"Sec", [](double x) -> double { return 1/cos(x); }},
-		{"Cot", [](double x) -> double { return cos(x)/sin(x); }},
+		{"Csc", [](double x) { return 1.0/sin(x); }},
+		{"Sec", [](double x) { return 1.0/cos(x); }},
+		{"Cot", [](double x) { return cos(x)/sin(x); }},
 		{"Arcsin", asin},
 		{"Arccos", acos},
 		{"Arctan", atan},
 		{"Sinh", sinh},
 		{"Cosh", cosh},
 		{"Tanh", tanh},
-		{"Csch", [](double x) -> double { return 1/sin(x); }},
-		{"Sech", [](double x) -> double { return 1/cos(x); }},
-		{"Coth", [](double x) -> double { return cosh(x)/sinh(x); }},
+		{"Csch", [](double x) { return 1.0/sin(x); }},
+		{"Sech", [](double x) { return 1.0/cos(x); }},
+		{"Coth", [](double x) { return cosh(x)/sinh(x); }},
 		{"Arcsinh", asinh},
 		{"Arccosh", acosh},
 		{"Arctanh", atanh},
@@ -414,7 +426,7 @@ namespace Gold {
 		{"Ln", log},
 		{"Log", log10},
 		{"Abs", abs},
-		{"H", [](double x) -> double { return (x < 0) ? 0 : 1; }}
+		{"H", [](double x) { return (x < 0) ? 0.0 : 1.0; }}
 	    };
 	    
 	    extern const std::map<std::string, base_node::ptr> built_in_derivatives;	

@@ -4,7 +4,7 @@
 #include <string>
 #include <exception>
 
-#define EXTEND_EXCEPTION(derrived, base) class derrived : base { \
+#define EXTEND_EXCEPTION(derrived, base) class derrived : public base { \
 public: \
  explicit derrived(const std::string& what_arg) : base(what_arg) { } \
     };
@@ -12,7 +12,7 @@ public: \
 namespace Gold {
     namespace math {
 	
-	class exception : std::exception {
+	class exception : public std::exception {
 	public:
 	    explicit exception(const std::string& what_arg) : str(what_arg) { }
 	    virtual const char* what() const throw() { return str.c_str(); }
