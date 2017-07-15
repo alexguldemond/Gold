@@ -131,17 +131,19 @@ TEST(MakeLeafNode, Test) {
 }
 
 TEST(MakeFunctionTest, Test) {
-    base_node::ptr root = make_function_node("Sin[10]");
+    base_node::ptr pointer = make_function_node("Sin[10]");
+    function* root = static_cast<function*>(pointer.get());
     EXPECT_EQ(root->get_token(), "Sin");
-    ASSERT_EQ(root->children.size(), uint(1));
-    EXPECT_EQ(root->children[0]->get_token(), "10");
+    ASSERT_EQ(root->size(), uint(1));
+    EXPECT_EQ(root->child(0).get_token(), "10");
 
-    root = make_function_node("Sin[x,y,z]");
+    pointer = make_function_node("Sin[x,y,z]");
+    root = static_cast<function*>(pointer.get());
     EXPECT_EQ(root->get_token(), "Sin");
-    ASSERT_EQ(root->children.size(), uint(3));
-    EXPECT_EQ(root->children[0]->get_token(), "x");
-    EXPECT_EQ(root->children[1]->get_token(), "y");
-    EXPECT_EQ(root->children[2]->get_token(), "z");
+    ASSERT_EQ(root->size(), uint(3));
+    EXPECT_EQ(root->child(0).get_token(), "x");
+    EXPECT_EQ(root->child(1).get_token(), "y");
+    EXPECT_EQ(root->child(2).get_token(), "z");
 }
 
 TEST(MakeTree, LeafTest) {
@@ -159,33 +161,40 @@ TEST(MakeTree, LeafTest) {
 }
 
 TEST(MakeTree, FunctionTest) {
-    base_node::ptr root = make_tree("Sin[10]");
+    base_node::ptr pointer = make_tree("Sin[10]");
+    function* root = static_cast<function*>(pointer.get());
     EXPECT_EQ(root->get_token(), "Sin");
-    ASSERT_EQ(root->children.size(), uint(1));
-    EXPECT_EQ(root->children[0]->get_token(), "10");
+    ASSERT_EQ(root->size(), uint(1));
+    EXPECT_EQ(root->child(0).get_token(), "10");
 
-    root = make_tree("Sin[x,y,z]");
+    pointer = make_tree("Sin[x,y,z]");
+    root = static_cast<function*>(pointer.get());
     EXPECT_EQ(root->get_token(), "Sin");
-    ASSERT_EQ(root->children.size(), uint(3));
-    EXPECT_EQ(root->children[0]->get_token(), "x");
-    EXPECT_EQ(root->children[1]->get_token(), "y");
-    EXPECT_EQ(root->children[2]->get_token(), "z");
+    ASSERT_EQ(root->size(), uint(3));
+    EXPECT_EQ(root->child(0).get_token(), "x");
+    EXPECT_EQ(root->child(1).get_token(), "y");
+    EXPECT_EQ(root->child(2).get_token(), "z");
 }
 
 TEST(MakeTree, GeneralTest) {
-    base_node::ptr root = make_tree("a+b");
+    base_node::ptr pointer = make_tree("a+b");
+    operation* root = static_cast<operation*>(pointer.get());
     EXPECT_EQ(root->get_token(), "+");
-    ASSERT_EQ(root->children.size(), uint(2));
-    EXPECT_EQ(root->children[0]->get_token(), "a");
-    EXPECT_EQ(root->children[1]->get_token(), "b");
+    ASSERT_EQ(root->size(), uint(2));
+    EXPECT_EQ(root->child(0).get_token(), "a");
+    EXPECT_EQ(root->child(1).get_token(), "b");
 
-    root = make_tree("a-b");
+    pointer = make_tree("a-b");
+    root = static_cast<operation*>(pointer.get());
     EXPECT_EQ(root->get_token(), "+");
-    ASSERT_EQ(root->children.size(), uint(2));
-    EXPECT_EQ(root->children[0]->get_token(), "a");
-    EXPECT_EQ(root->children[1]->children.size(), uint(2));
-    EXPECT_EQ(root->children[1]->children[0]->get_token(), "-1");
-    EXPECT_EQ(root->children[1]->children[1]->get_token(), "b");
+    ASSERT_EQ(root->size(), uint(2));
+    EXPECT_EQ(root->child(0).get_token(), "a");
+    EXPECT_EQ(root->child(1).size(), uint(2));
+    
+    operation& next = static_cast<operation&>(root->child(1));
+    root = static_cast<operation*>(pointer.get());
+    EXPECT_EQ(next.child(0).get_token(), "-1");
+    EXPECT_EQ(next.child(1).get_token(), "b");
 }
 
 TEST(MakeString, Test) {

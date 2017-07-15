@@ -92,29 +92,34 @@ namespace Gold {
 	}
 
 	expression expression::commutative_operator(const expression& lhs, const expression& rhs, const std::string& operation) {
-	    node::base_node::ptr left = node::base_node::ptr(lhs.root->clone());
-	    node::base_node::ptr right = node::base_node::ptr(rhs.root->clone());
+	    node::base_node::ptr left_handle = node::base_node::ptr(lhs.root->clone());
+	    node::base_node::ptr right_handle = node::base_node::ptr(rhs.root->clone());
 	    expression result;
-	    if (left->get_token() == operation && right->get_token() == operation) {
-		for (auto iter = right->children.begin(); iter != right->children.end(); iter++) {
-		    left->children.push_back(std::move(*iter));
+
+	    if (left_handle->get_token() == operation && right_handle->get_token() == operation) {
+		node::operation* left = static_cast<node::operation*>(left_handle.get());
+		node::operation* right = static_cast<node::operation*>(right_handle.get());
+		for (auto iter = right->begin(); iter != right->end(); iter++) {
+		    left->append(std::move(*iter));
 		}
-		result.root = std::move(left);
+		result.root = std::move(left_handle);
 	    }
-	    else if (left->get_token() == operation) {
-		left->children.push_back(std::move(right));
-		result.root = std::move(left);
+	    else if (left_handle->get_token() == operation) {
+		node::operation* left = static_cast<node::operation*>(left_handle.get());
+		left->append(std::move(right_handle));
+		result.root = std::move(left_handle);
 	    }
-	    else if (right->get_token() == operation) {
-		auto iter = right->children.begin();
-		right->children.insert(iter, std::move(left));
-		result.root = std::move(right);
+	    else if (right_handle->get_token() == operation) {
+		node::operation* right = static_cast<node::operation*>(right_handle.get());
+		auto iter = right->begin();
+		right->getChildren().insert(iter, std::move(left_handle));
+		result.root = std::move(right_handle);
 	    }
 	    else {
 		node::base_node::vec vector;
 		vector.reserve(2);
-		vector.push_back(std::move(left));
-		vector.push_back(std::move(right));
+		vector.push_back(std::move(left_handle));
+		vector.push_back(std::move(right_handle));
 		node::add::ptr newRoot = std::make_unique<node::add>(vector);
 		result.root = std::move(newRoot);
 	    }
@@ -128,7 +133,8 @@ namespace Gold {
 	expression operator-(const expression& expr) {
 	    node::base_node::ptr right = node::base_node::ptr(expr.root->clone());
 	    if (right->get_token() == "*") {
-		right->children.insert(right->children.begin(), std::make_unique<node::integer>(-1));
+		node::multiply* right_ptr = static_cast<node::multiply*>(right.get());
+		right_ptr->getChildren().insert(right_ptr->getChildren().begin(), std::make_unique<node::integer>(-1));
 	    }
 	    else {
 		node::base_node::vec vector;

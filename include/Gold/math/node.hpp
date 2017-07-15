@@ -13,41 +13,35 @@
 namespace Gold {
     namespace math {
 	namespace node {
-
+	    
+	    class operation;
 	    class add;
 	    class multiply;
 	    class power;
 	    class function;
+	    class inverse;
+	    class quotient;
+
 	    class integer;
 	    class number;
-	    class rational;
-
+	    class variable;
+	    
 	    class base_node {
 	    public:
 		typedef std::unique_ptr<base_node> ptr;
 		typedef std::vector<ptr> vec;
 		base_node() { //Intentionally empty
 		}
-		explicit base_node(const base_node::vec& _children);
-		explicit base_node(base_node::vec&& _children);
-		explicit base_node(const base_node& other);
-		explicit base_node(base_node&& other);
-		base_node& operator=(const base_node& other);
-		base_node& operator=(base_node&& other);
 		virtual base_node* clone() const=0;
 		virtual ~base_node() { //Intentionally empty
 		}
+		virtual uint size() const { return 0; }
 		virtual std::string get_token() const=0;
 		virtual bool is_zero() const { return false; }
 		virtual bool is_one() const { return false; }
 		virtual bool is_minus_one() const { return false; }
-		
-		virtual bool is_undefined() const { 
-		    return children.size() == 0 ||
-			std::any_of(children.begin(), children.end(), [](const base_node::ptr& iter) {
-				return iter->is_undefined();
-			    });    
-		}
+		virtual bool is_undefined() const=0;
+		virtual bool is_leaf() const { return true; }
 		
 		virtual double evaluate(const std::map<std::string, double>& args = { }) const=0;
 		
@@ -58,20 +52,66 @@ namespace Gold {
 		virtual std::string string() const=0;
 		virtual ptr derivative(const std::string& var) const=0;
 		virtual ptr change_variables(const std::map<std::string, ptr>& changes) const=0;
-		vec children;
+	    };
+	    
+	    class operation : public base_node {
+	    public:
+		typedef std::unique_ptr<operation> ptr;
+		typedef base_node::vec::iterator iterator;
+		typedef base_node::vec::const_iterator const_iterator;
+		
+		operation() { //Intentionally empty
+		}
+		explicit operation(const base_node::vec& _children);
+		explicit operation(base_node::vec&& _children);
+		explicit operation(const operation& other);
+		explicit operation(operation&& other);
+		operation& operator=(const operation& other);
+		operation& operator=(operation&& other);
+		
+		iterator begin() { return children.begin(); }
+		const_iterator begin() const { return children.begin(); }
+		iterator end() { return children.end(); }
+		const_iterator end() const { return children.end(); }
+		base_node& child(uint i) const { 
+		    if (i >= size()) {
+			throw std::length_error("Out of bounds");
+		    }
+		    return *(children[i]);
+		}
+		
+		void append(base_node::ptr&& node) {
+		    children.push_back(std::move(node));
+		} 
+		void append_clone(const base_node& new_child) {
+		    children.push_back( std::unique_ptr<base_node>(new_child.clone()) );
+		}
+		
+		//TODO Remove this function and any references to it and replace with specialized functions
+		base_node::vec& getChildren() { return children; }
+		virtual uint size() const { return children.size(); }
+		virtual bool is_leaf() const { return children.empty(); }
+		virtual bool is_undefined() const { 
+		    return size() == 0 ||
+			std::any_of(children.begin(), children.end(), [](const base_node::ptr& iter) {
+				return iter->is_undefined();
+			    });    
+		}
+	    protected:
+		base_node::vec children;
 	    };
 
-	    class add : public base_node {
+	    class add : public operation {
 	    public:
 		typedef std::unique_ptr<add> ptr;
 		add() { //Intentionally empty
 		}
-		explicit add(const base_node::vec& _children) : base_node(_children) { }
-		explicit add(base_node::vec&& _children) : base_node(_children) { }
-		explicit add(const add& other) : base_node(other) { }
-		explicit add(add&& other) : base_node(other) { }
-		add& operator=(const add& other) { base_node::operator=(other); return *this;}
-		add& operator=(add&& other) { base_node::operator=(other); return *this;}
+		explicit add(const base_node::vec& _children) : operation(_children) { }
+		explicit add(base_node::vec&& _children) : operation(_children) { }
+		explicit add(const add& other) : operation(other) { }
+		explicit add(add&& other) : operation(other) { }
+		add& operator=(const add& other) { operation::operator=(other); return *this;}
+		add& operator=(add&& other) { operation::operator=(other); return *this;}
 		virtual add* clone() const { return new add(*this); }
 		virtual ~add() { //Intentionally empty
 		}
@@ -81,18 +121,18 @@ namespace Gold {
 		virtual base_node::ptr derivative(const std::string& var) const;
 		virtual base_node::ptr change_variables(const std::map<std::string, base_node::ptr>& changes) const;
 	    };
-
-	    class multiply : public base_node {
+	    
+	    class multiply : public operation {
 	    public:
 		typedef std::unique_ptr<multiply> ptr;
 		multiply() { //Intentionally empty
 		}
-		explicit multiply(const base_node::vec& _children) : base_node(_children) { }
-		explicit multiply(base_node::vec&& _children) : base_node(_children) { }
-		explicit multiply(const multiply& other) : base_node(other) { }
-		explicit multiply(multiply&& other) : base_node(other) { }
-		multiply& operator=(const multiply& other) { base_node::operator=(other); return *this;}
-		multiply& operator=(multiply&& other) { base_node::operator=(other); return *this;}
+		explicit multiply(const base_node::vec& _children) : operation(_children) { }
+		explicit multiply(base_node::vec&& _children) : operation(_children) { }
+		explicit multiply(const multiply& other) : operation(other) { }
+		explicit multiply(multiply&& other) : operation(other) { }
+		multiply& operator=(const multiply& other) { operation::operator=(other); return *this;}
+		multiply& operator=(multiply&& other) { operation::operator=(other); return *this;}
 		virtual multiply* clone() const { return new multiply(*this); }
 		virtual ~multiply() { //Intentionally empty
 		}
@@ -131,17 +171,17 @@ namespace Gold {
 		virtual base_node::ptr derivative(const std::string& var) const;
 		virtual base_node::ptr change_variables(const std::map<std::string, base_node::ptr>& changes) const;
 	    };
-
-	    class power : public base_node {
+	    
+	    class power : public operation {
 	    public:
 		typedef std::unique_ptr<power> ptr;
 		power() { //Intentionally empty
 		}
 		explicit power(const base_node& base, const base_node& exponent);
-		explicit power(const power& other) : base_node(other) { }
-		explicit power(power&& other) : base_node(other) { }
-		power& operator=(const power& other) { base_node::operator=(other); return *this;}
-		power& operator=(power&& other) { base_node::operator=(other); return *this;}
+		explicit power(const power& other) : operation(other) { }
+		explicit power(power&& other) : operation(other) { }
+		power& operator=(const power& other) { operation::operator=(other); return *this;}
+		power& operator=(power&& other) { operation::operator=(other); return *this;}
 		virtual power* clone() const { return new power(*this); }
 		virtual ~power() { //Intentionally empty
 		}
@@ -157,7 +197,7 @@ namespace Gold {
 		}
 		virtual bool is_undefined() const { 
 		    auto exponent = this->exponent();
-		    return base_node::is_undefined() || 
+		    return operation::is_undefined() || 
 			( this->base()->is_zero() && (exponent->is_zero() || exponent->is_minus_one())) ;
 		}
 		virtual std::string get_token() const { return "^"; }
@@ -169,24 +209,24 @@ namespace Gold {
 		virtual base_node::ptr change_variables(const std::map<std::string, base_node::ptr>& changes) const;
 	    };
 	    
-	    class function : public base_node {
+	    class function : public operation {
 	    private:
 		std::string token;
 	    public:
 		typedef std::unique_ptr<function> ptr;
 		function() { //Intentionally empty
 		}
-		function(const std::string& _token, const base_node::vec& _children={}) : base_node(_children), token(_token) { }
-		function(const std::string& _token, base_node::vec&& _children) : base_node(_children), token(_token) { }
-		function(const function& other) : base_node(other) {token = other.token; }
-		function(function&& other) : base_node(other) { token = other.token; }
+		function(const std::string& _token, const base_node::vec& _children={}) : operation(_children), token(_token) { }
+		function(const std::string& _token, base_node::vec&& _children) : operation(_children), token(_token) { }
+		function(const function& other) : operation(other) {token = other.token; }
+		function(function&& other) : operation(other) { token = other.token; }
 		function& operator=(const function& other) { 
-		    base_node::operator=(other);
+		    operation::operator=(other);
 		    token = other.token;
 		    return *this;
 		}
 		function& operator=(function&& other) { 
-		    base_node::operator=(other); 
+		    operation::operator=(other); 
 		    token = other.token;
 		    return *this;
 		}
@@ -199,7 +239,7 @@ namespace Gold {
 		virtual base_node::ptr derivative(const std::string& var) const;
 		virtual base_node::ptr change_variables(const std::map<std::string, base_node::ptr>& changes) const;
 	    };
-
+	    
 	    class integer : public base_node {
 	    private:
 		int token;
@@ -209,21 +249,7 @@ namespace Gold {
 		}
 		explicit integer(const std::string& _token) : token(std::stoi(_token)) { }
 		explicit integer(int _token) : token(_token) { }
-		integer(const integer& other) : base_node(other) {token = other.token; }
-		integer(integer&& other) : base_node(other) { token = other.token; }
-		integer& operator=(const integer& other) { 
-		    base_node::operator=(other);
-		    token = other.token;
-		    return *this;
-		}
-		integer& operator=(integer&& other) { 
-		    base_node::operator=(other); 
-		    token = other.token;
-		    return *this;
-		}
 		virtual integer* clone() const { return new integer(*this); }
-		virtual ~integer() { //Intentionally empty
-		}
 		virtual bool is_zero() const{ return token == 0; }
 		virtual bool is_one() const { return token == 1; }
 		virtual bool is_minus_one() const { return token == -1; }
@@ -246,21 +272,7 @@ namespace Gold {
 		}
 		explicit number(const std::string& _token) : token(std::stof(_token)) { }
 		explicit number(double _token = 0) : token(_token) { }
-		number(const number& other) : base_node(other) {token = other.token; }
-		number(number&& other) : base_node(other) { token = other.token; }
-		number& operator=(const number& other) { 
-		    base_node::operator=(other);
-		    token = other.token;
-		    return *this;
-		}
-		number& operator=(number&& other) { 
-		    base_node::operator=(other); 
-		    token = other.token;
-		    return *this;
-		}
 		virtual number* clone() const { return new number(*this); }
-		virtual ~number() { //Intentionally empty
-		}
 		virtual bool is_zero() const { return token == 0; }
 		virtual bool is_one() const { return token == 1; }
 		virtual bool is_minus_one() const { return token == -1; }
@@ -282,21 +294,7 @@ namespace Gold {
 		variable() { //Intentionally empty
 		}
 		explicit variable(const std::string& _token) : token(_token) { }
-		variable(const variable& other) : base_node(other) {token = other.token; }
-		variable(variable&& other) : base_node(other) { token = other.token; }
-		variable& operator=(const variable& other) { 
-		    base_node::operator=(other);
-		    token = other.token;
-		    return *this;
-		}
-		variable& operator=(variable&& other) { 
-		    base_node::operator=(other); 
-		    token = other.token;
-		    return *this;
-		}
 		virtual variable* clone() const { return new variable(*this); }
-		virtual ~variable() { //Intentionally empty
-		}
 		virtual bool is_undefined() const { return false; }
 		virtual std::string get_token() const { return token; }
 		virtual double evaluate(const std::map<std::string, double>& args = { }) const;

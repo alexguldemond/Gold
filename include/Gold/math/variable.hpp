@@ -12,7 +12,8 @@ namespace Gold {
 	    explicit variable(const std::string& expr);
 	    variable(const variable& other);
 	    variable(variable&& other);
-	    virtual ~variable() { }
+	    virtual ~variable() { //Intentionally empty
+	    }
 	    variable& operator=(const variable& other);
 	    variable& operator=(variable&& other);
 

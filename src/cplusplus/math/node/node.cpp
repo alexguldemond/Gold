@@ -12,41 +12,39 @@ namespace Gold {
     namespace math {
 	namespace node {
 
-	    base_node::base_node(const base_node::vec& _children) {
+	    operation::operation(const base_node::vec& _children) {
 		this->children.reserve(_children.size());
-		for (auto iter = _children.cbegin(); iter != _children.cend(); iter++) {
-		    this->children.push_back( std::unique_ptr<base_node>( (*iter)->clone() ) );
+		for (auto iter = _children.begin(); iter != _children.end(); iter++) {
+		    append_clone(**iter);
 		}
 	    }
 
-	    base_node::base_node(base_node::vec&& _children) {
+	    operation::operation(base_node::vec&& _children) {
 		this->children = std::move(_children);
 	    }
 
-	    base_node::base_node(const base_node& other) {
-		this->children.reserve(other.children.size());
-		for (auto iter = other.children.cbegin(); iter != other.children.cend(); iter++) {
-		    base_node::ptr ptr = std::unique_ptr<base_node>((*iter)->clone());
-		    this->children.push_back(std::move(ptr));
+	    operation::operation(const operation& other) {
+		this->children.reserve(other.size());
+		for (auto iter = other.begin(); iter != other.end(); iter++) {
+		    append_clone(**iter);
 		}
 	    }
 
-	    base_node::base_node(base_node&& other) {
+	    operation::operation(operation&& other) {
 		this->children = std::move(other.children);
 	    }
 
-	    base_node& base_node::operator=(const base_node& other) {
+	    operation& operation::operator=(const operation& other) {
 		if (&other != this) {
 		    this->children.clear();
-		    for (auto iter = other.children.begin(); iter != other.children.end(); iter++) {
-			base_node::ptr ptr = std::unique_ptr<base_node>( (*iter)->clone() );
-			this->children.push_back(std::move(ptr));
+		    for (auto iter = other.begin(); iter != other.end(); iter++) {
+			append_clone(**iter);
 		    }
 		}
 		return *this;
 	    }
 	    
-	    base_node& base_node::operator=(base_node&& other) {
+	    operation& operation::operator=(operation&& other) {
 		if (&other != this) {
 		    this->children = std::move(other.children);
 		}
@@ -72,13 +70,13 @@ namespace Gold {
 	    inverse::ptr inverse::make_inverse(const base_node& denominator) {
 		inverse::ptr inverse_node = std::make_unique<inverse>();
 		inverse_node->children.reserve(2);
-		inverse_node->children.push_back( base_node::ptr(denominator.clone()) );
-		inverse_node->children.push_back( std::make_unique<integer>(-1) );
+		inverse_node->append( base_node::ptr(denominator.clone()) );
+		inverse_node->append( std::make_unique<integer>(-1) );
 		return inverse_node;
 	    }
 
 	    base_node::ptr inverse::denominator() const {
-		if (children.size() != 2) {
+		if (size() != 2) {
 		    throw invalid_node("inverse node not initialized correctly");
 		}
 		return base_node::ptr(children[0]->clone());
@@ -87,29 +85,30 @@ namespace Gold {
 	    quotient::quotient(const base_node& numerator, const base_node& denominator) {
 		children.clear();
 		children.reserve(2);
-		children.push_back( base_node::ptr(numerator.clone()) );
-		children.push_back( inverse::make_inverse(denominator) );
+		append( base_node::ptr(numerator.clone()) );
+		append( inverse::make_inverse(denominator) );
 	    }
 
 	    base_node::ptr quotient::numerator() const { 
-		if (children.size() != 2) {
+		if (size() != 2) {
 		    throw invalid_node("Quotient node not initialized correctly");
 		}
-		return base_node::ptr( children[0]->clone() ); 
+		return base_node::ptr( child(0).clone() ); 
 	    }
 	    
 	    base_node::ptr quotient::denominator() const { 
-		if (children.size() != 2 || children[1]->children.size() != 2) {
+		if ( size() != 2 || child(1).size() != 2) {
 		    throw invalid_node("Quotient node not initialized correctly");
 		}
-		return base_node::ptr( children[1]->children[0]->clone() );
+		operation& power_node = static_cast<operation&>(child(1)); 
+		return base_node::ptr( power_node.child(0).clone() );
 	    }
 	    
 	    rational::rational(int numerator, int denominator) {
 		    children.clear();
 		    children.reserve(2);
-		    children.push_back(std::make_unique<integer>(numerator));
-		    children.push_back(inverse::make_inverse( integer(denominator) ) );
+		    append(std::make_unique<integer>(numerator));
+		    append(inverse::make_inverse( integer(denominator) ) );
 	    }
 
 	    /*************************************************
@@ -118,22 +117,22 @@ namespace Gold {
 	     *
 	     ************************************************/
 	    double add::evaluate(const std::map<std::string, double>& args) const {
-		if (children.empty()) {
+		if (is_leaf()) {
 			throw invalid_node("Add node not initialized with children");
 		}
 		double sum = 0;
-		for (auto iter = children.begin(); iter != children.end(); iter++) {
+		for (auto iter = begin(); iter != end(); iter++) {
 		    sum += (*iter)->evaluate(args);
 		}
 		return sum;
 	    }
 
 	    double multiply::evaluate(const std::map<std::string, double>& args) const {
-		if (children.empty()) {
+		if (is_leaf()) {
 			throw invalid_node("multiply node not initialized with children");
 		}
 		double product = 1;
-		for (auto iter = children.begin(); iter != children.end(); iter++) {
+		for (auto iter = begin(); iter != end(); iter++) {
 		    product *= (*iter)->evaluate(args);
 		}
 		return product;
@@ -141,26 +140,26 @@ namespace Gold {
 	    
 	    power::power(const base_node& base, const base_node& exponent) {
 		children.reserve(2);
-		children.push_back( std::unique_ptr<base_node>(base.clone()));
-		children.push_back( std::unique_ptr<base_node>(exponent.clone()));
+		append( std::unique_ptr<base_node>(base.clone()));
+		append( std::unique_ptr<base_node>(exponent.clone()));
 	    }
 
 	    base_node::ptr power::base() const { 
-		if (children.empty()) {
+		if (is_leaf()) {
 		    throw invalid_node("Power node not initialized with children");
 		}
-		return base_node::ptr( children[0]->clone() ); 
+		return base_node::ptr( child(0).clone() ); 
 	    }
 
 	    base_node::ptr power::exponent() const {
-		if (children.empty()) {
+		if (is_leaf()) {
 		    throw invalid_node("Power node not initialized with children");
 		}
-		return base_node::ptr( children[1]->clone() ); 
+		return base_node::ptr( child(1).clone() ); 
 	    }
 
 	    double power::evaluate(const std::map<std::string, double>& args) const {
-		if (children.size() != 2) {
+		if (size() != 2) {
 			throw invalid_node("Power node initialized with more or less than two children");
 		}
 		double base = this->base()->evaluate(args);
@@ -169,15 +168,15 @@ namespace Gold {
 	    }
 
 	    double function::evaluate(const std::map<std::string, double>& args) const {
-		if (children.empty()) {
+		if (is_leaf()) {
 			throw invalid_node("Function node not initialized with children");
 		}
 		if ( built_in_functions.find(get_token()) != built_in_functions.end()) {
-		    if (children.size() != 1) {
+		    if (size() != 1) {
 			throw invalid_node("Built in functions take only one argument");
 		    }
 		    else {
-			double value = this->children[0]->evaluate(args);
+			double value = child(0).evaluate(args);
 			return built_in_functions.at(get_token())(value);
 		    }
 		}
@@ -207,56 +206,56 @@ namespace Gold {
 	     * Build string operations
 	     *****************************************************/
 	    std::string add::string() const {
-		if (children.size() == 0) {
+		if (is_leaf()) {
 		    return "";
 		}
-		std::string token = this->get_token();
-		std::string first = children[0]->string();
-		for (auto iter = children.begin()+1; iter != children.end(); iter++) {
+		std::string token = get_token();
+		std::string first = child(0).string();
+		for (auto iter = begin()+1; iter != end(); iter++) {
 		    Gold::math::utils::append_with_parens(first, (*iter)->string(), token, true);
 		}
 		return first;
 	    }
 	    
 	    std::string multiply::string() const {
-		if (children.size() == 0) {
+		if (is_leaf()) {
 		    return "";
 		}
-		std::string token = this->get_token();
-		std::string first = children[0]->string();
-		if (children[0]->get_token() == "+") {
+		std::string token = get_token();
+		std::string first = child(0).string();
+		if (child(0).get_token() == "+") {
 		    first = std::string("(").append(first).append(")");
 		}
-		for (auto iter = children.begin()+1; iter != children.end(); iter++) {
+		for (auto iter = begin()+1; iter != end(); iter++) {
 		    Gold::math::utils::append_with_parens(first, (*iter)->string(), token, true);
 		}
 		return first;
 	    }
 
 	    std::string power::string() const {
-		if (children.size() == 0) {
+		if (is_leaf()) {
 		    return "";
 		}
-		std::string token = this->get_token();
-		std::string first = children[0]->string();
-		if (children[0]->get_token() == "+" || children[0]->get_token() == "*" || children[0]->get_token() == "^") {
+		std::string token = get_token();
+		std::string first = child(0).string();
+		if (child(0).get_token() == "+" || child(0).get_token() == "*" || child(0).get_token() == "^") {
 		    first = std::string("(").append(first).append(")");
 		}
-		for (auto iter = children.begin()+1; iter != children.end(); iter++) {
+		for (auto iter = begin()+1; iter != end(); iter++) {
 		    Gold::math::utils::append_with_parens(first, (*iter)->string(), token, true);
 		}
 		return first;
 	    }
 
 	    std::string function::string() const {
-		if (children.size() == 0) {
+		if (is_leaf()) {
 		    return "";
 		}
 		
 		std::string str = get_token().append("[");
 		std::vector<std::string> subStrings;
-		subStrings.reserve(children.size());
-		for (auto iter = children.begin(); iter != children.end(); iter++) {
+		subStrings.reserve(size());
+		for (auto iter = begin(); iter != end(); iter++) {
 		    subStrings.push_back( (*iter)->string() );
 		}
 		str.append( boost::algorithm::join(subStrings, ", ") ).append("]");
@@ -268,8 +267,8 @@ namespace Gold {
 		    throw invalid_node("Node is undefined, cannot take derivative");
 		}
 		base_node::vec derivative_vector;
-		derivative_vector.reserve(children.size());
-		for (auto iter = children.begin(); iter != children.end(); iter++) {
+		derivative_vector.reserve(size());
+		for (auto iter = begin(); iter != end(); iter++) {
 		    auto derivative_node = (*iter)->derivative(var);
 		    if (!derivative_node->is_zero()) {
 			derivative_vector.push_back(std::move(derivative_node) );
@@ -286,10 +285,10 @@ namespace Gold {
 		    return std::make_unique<integer>(0);
 		}
 		base_node::vec derivative_vector;
-		for (auto iter = children.begin(); iter != children.end(); iter++) {
+		for (auto iter = begin(); iter != end(); iter++) {
 		    base_node::vec sub_vector;
 		    bool is_derivative_zero = false;
-		    for (auto jter = children.begin(); jter != children.end(); jter++) {
+		    for (auto jter = begin(); jter != end(); jter++) {
 			if (iter == jter) {
 			    base_node::ptr derivative_node = (*jter)->derivative(var);
 			    if ( (is_derivative_zero = derivative_node->is_zero()) ) break;
@@ -318,50 +317,50 @@ namespace Gold {
 		
 		base_node::ptr base_prime = this->base()->derivative(var);
 		base_node::ptr expo_prime = this->exponent()->derivative(var);
-		base_node::ptr derivative = std::make_unique<multiply>();
+		multiply::ptr derivative = std::make_unique<multiply>();
 		if (base_prime->is_zero() && expo_prime->is_zero()) {
 		    return std::make_unique<integer>(0);
 		}
 		else if (expo_prime->is_zero()) {
 		    power::ptr power_node = std::make_unique<power>();
-		    power_node->children.push_back(this->base());
+		    power_node->append(this->base());
 		    add::ptr exponent_node = std::make_unique<add>();
-		    exponent_node->children.push_back(this->exponent());
-		    exponent_node->children.push_back(std::make_unique<integer>(-1));
-		    power_node->children.push_back(std::move(exponent_node));
-		    derivative->children.push_back(std::move(power_node));
+		    exponent_node->append(this->exponent());
+		    exponent_node->append(std::make_unique<integer>(-1));
+		    power_node->append(std::move(exponent_node));
+		    derivative->append(std::move(power_node));
 		    
-		    derivative->children.push_back(this->exponent());
-		    derivative->children.push_back(std::move(base_prime));
-		    return derivative;
+		    derivative->append(this->exponent());
+		    derivative->append(std::move(base_prime));
+		    return std::move(derivative);
 		}
 		else if (base_prime->is_zero()) {
-		    derivative->children.push_back(power::ptr(this->clone()));
+		    derivative->append_clone(*this);
 		    function::ptr function_node = std::make_unique<function>("Ln");
-		    function_node->children.push_back(this->base());
-		    derivative->children.push_back(std::move(function_node));
-		    derivative->children.push_back(std::move(expo_prime));
-		    return derivative;
+		    function_node->append(this->base());
+		    derivative->append(std::move(function_node));
+		    derivative->append(std::move(expo_prime));
+		    return std::move(derivative);
 		}
 		else /* Both are dependent on var */{
-		    derivative->children.push_back(power::ptr(this->clone()));
+		    derivative->append_clone(*this);
 		    
 		    add::ptr sub_parts = std::make_unique<add>();
 		    
 		    multiply::ptr lhs = std::make_unique<multiply>();
-		    lhs->children.push_back(this->exponent());
-		    lhs->children.push_back(std::move(base_prime));
-		    lhs->children.push_back(inverse::make_inverse(*(this->base())));
-		    sub_parts->children.push_back(std::move(lhs));
+		    lhs->append(this->exponent());
+		    lhs->append(std::move(base_prime));
+		    lhs->append(inverse::make_inverse(*(this->base())));
+		    sub_parts->append(std::move(lhs));
 		    
 		    multiply::ptr rhs = std::make_unique<multiply>();
 		    function::ptr logarithm = std::make_unique<function>("Ln");
-		    logarithm->children.push_back(this->base());
-		    rhs->children.push_back(std::move(logarithm));
-		    rhs->children.push_back(std::move(expo_prime));
-		    sub_parts->children.push_back(std::move(rhs));
-		    derivative->children.push_back(std::move(sub_parts));
-		    return derivative;
+		    logarithm->append(this->base());
+		    rhs->append(std::move(logarithm));
+		    rhs->append(std::move(expo_prime));
+		    sub_parts->append(std::move(rhs));
+		    derivative->append(std::move(sub_parts));
+		    return std::move(derivative);
 		}
 	    }
 
@@ -370,7 +369,7 @@ namespace Gold {
 		    throw invalid_node("Functioned node is undefined");
 		}
 		
-		if (this->children.size() != 1) {
+		if (this->size() != 1) {
 		    throw std::invalid_argument("Not implemented yet");
 		}
 		
@@ -386,33 +385,46 @@ namespace Gold {
 		derivative = derivative->change_variables(change);
 		
 		base_node::ptr chain_derivative = this->children[0]->derivative(var);
-		if ( chain_derivative->is_zero() ) {
+		if ( chain_derivative->is_zero() || derivative->is_zero() ) {
 		    return std::make_unique<integer>(0);
 		}
 		else if ( chain_derivative->is_one() ) {
 		    return derivative;
 		}
+		else if (derivative->is_one() ) {
+		    return chain_derivative;
+		}
 		else {
 		    if (derivative->get_token() == "*" && chain_derivative->get_token() == "*") {
-			derivative->children.insert(derivative->children.end(),
-						    std::make_move_iterator(chain_derivative->children.begin()),
-						    std::make_move_iterator(chain_derivative->children.end())
+			auto temp_ptr = static_cast<operation*>(derivative.release());
+			operation::ptr deriv_handle = operation::ptr(temp_ptr);
+			
+			temp_ptr = static_cast<operation*>(chain_derivative.release());
+			operation::ptr chain_handle = operation::ptr(temp_ptr);
+			
+			deriv_handle->getChildren().insert(deriv_handle->getChildren().end(),
+							   std::make_move_iterator(chain_handle->getChildren().begin()),
+							   std::make_move_iterator(chain_handle->getChildren().end())
 						    );
-			return derivative;
+			return std::move(deriv_handle);
 		    }
 		    else if (derivative->get_token() == "*") {
-			derivative->children.push_back(std::move(chain_derivative));
-			return derivative;
+			auto temp_ptr = static_cast<operation*>(derivative.release());
+			operation::ptr deriv_handle = operation::ptr(temp_ptr);
+			deriv_handle->append(std::move(chain_derivative));
+			return std::move(deriv_handle);
 		    }
 		    else if (chain_derivative->get_token() == "*") {
-			chain_derivative->children.insert(chain_derivative->children.begin(), std::move(derivative) );
-			return chain_derivative;
+			auto temp_ptr = static_cast<operation*>(chain_derivative.release());
+			operation::ptr chain_handle = operation::ptr(temp_ptr);
+			chain_handle->getChildren().insert(chain_handle->getChildren().begin(), std::move(derivative) );
+			return std::move(chain_handle);
 		    }
 		    else {
-			base_node::ptr multiply_node = std::make_unique<multiply>();
-			multiply_node->children.push_back(std::move(derivative));
-			multiply_node->children.push_back(std::move(chain_derivative));
-			return multiply_node;
+			multiply::ptr multiply_node = std::make_unique<multiply>();
+			multiply_node->append(std::move(derivative));
+			multiply_node->append(std::move(chain_derivative));
+			return std::move(multiply_node);
 		    }
 		}
 	    }
@@ -421,19 +433,20 @@ namespace Gold {
 	     * Changing of variables
 	     ********************************************************/
 	    base_node::ptr add::change_variables(const std::map<std::string, base_node::ptr>& changes) const {
-		base_node::ptr result = base_node::ptr(this->clone());
-		for (auto iter = result->children.begin(); iter != result->children.end(); iter++) {
-		    if ( (*iter)->children.size() != 0 ) {
+		add::ptr result = add::ptr(this->clone());
+		for (auto iter = result->begin(); iter != result->end(); iter++) {
+		    if ( !(*iter)->is_leaf()) {
 			(*iter) = (*iter)->change_variables(changes);
 		    }
 		    else if ( changes.find((*iter)->get_token()) != changes.end() ) {
 			base_node::ptr replacement = base_node::ptr( changes.at((*iter)->get_token())->clone() );
 			if (replacement->get_token() == "+") {
-			    iter = result->children.erase(iter);
-			    std::size_t insertion_length = replacement->children.size();
-			    iter = result->children.insert(iter, 
-						    std::make_move_iterator(replacement->children.begin()), 
-						    std::make_move_iterator(replacement->children.end())
+			    add* replacement_ptr = static_cast<add*>(replacement.get());
+			    iter = result->getChildren().erase(iter);
+			    std::size_t insertion_length = replacement_ptr->size();
+			    iter = result->getChildren().insert(iter, 
+								std::make_move_iterator(replacement_ptr->begin()), 
+								std::make_move_iterator(replacement_ptr->end())
 			    );
 			    iter += insertion_length -1;
 			}
@@ -442,23 +455,24 @@ namespace Gold {
 			}
 		    }
 		}
-		return result;
+		return std::move(result);
 	    }
 
 	    base_node::ptr multiply::change_variables(const std::map<std::string, base_node::ptr>& changes) const {
-		base_node::ptr result = base_node::ptr(this->clone());
-		for (auto iter = result->children.begin(); iter != result->children.end(); iter++) {
-		    if ( (*iter)->children.size() != 0 ) {
+		multiply::ptr result = multiply::ptr(this->clone());
+		for (auto iter = result->begin(); iter != result->end(); iter++) {
+		    if ( (*iter)->size() != 0 ) {
 			(*iter) = (*iter)->change_variables(changes);
 		    }
 		    else if ( changes.find((*iter)->get_token()) != changes.end() ) {
 			base_node::ptr replacement = base_node::ptr( changes.at((*iter)->get_token())->clone() );
 			if (replacement->get_token() == "*") {
-			    iter = result->children.erase(iter);
-			    std::size_t insertion_length = replacement->children.size();
-			    iter = result->children.insert(iter, 
-						    std::make_move_iterator(replacement->children.begin()), 
-						    std::make_move_iterator(replacement->children.end())
+			    multiply* replacement_ptr = static_cast<multiply*>(replacement.get());
+			    iter = result->getChildren().erase(iter);
+			    std::size_t insertion_length = replacement_ptr->size();
+			    iter = result->getChildren().insert(iter, 
+						    std::make_move_iterator(replacement_ptr->begin()), 
+						    std::make_move_iterator(replacement_ptr->end())
 			    );
 			    iter += insertion_length -1;
 			}
@@ -467,33 +481,33 @@ namespace Gold {
 			}
 		    }
 		}
-		return result;
+		return std::move(result);
 	    }
 	    
 	    base_node::ptr power::change_variables(const std::map<std::string, base_node::ptr>& changes) const {
-		base_node::ptr result = base_node::ptr(this->clone());
-		for (auto iter = result->children.begin(); iter != result->children.end(); iter++) {
-		    if ( (*iter)->children.size() != 0 ) {
+		power::ptr result = power::ptr(this->clone());
+		for (auto iter = result->begin(); iter != result->end(); iter++) {
+		    if ( (*iter)->size() != 0 ) {
 			(*iter) = (*iter)->change_variables(changes);
 		    }
 		    else if ( changes.find((*iter)->get_token()) != changes.end() ) {
 			(*iter) = base_node::ptr( changes.at((*iter)->get_token())->clone() );
 		    }
 		}
-		return result;
+		return std::move(result);
 	    }
 
 	    base_node::ptr function::change_variables(const std::map<std::string, base_node::ptr>& changes) const {
-		base_node::ptr result = base_node::ptr(this->clone());
-		for (auto iter = result->children.begin(); iter != result->children.end(); iter++) {
-		    if ( (*iter)->children.size() != 0 ) {
+		function::ptr result = function::ptr(this->clone());
+		for (auto iter = result->begin(); iter != result->end(); iter++) {
+		    if ( (*iter)->size() != 0 ) {
 			(*iter) = (*iter)->change_variables(changes);
 		    }
 		    else if ( changes.find((*iter)->get_token()) != changes.end() ) {
 			(*iter) = base_node::ptr( changes.at((*iter)->get_token())->clone() );
 		    }
 		}
-		return result;
+		return std::move(result);
 	    }
 
 	    base_node::ptr variable::change_variables(const std::map<std::string, base_node::ptr>& changes) const {
