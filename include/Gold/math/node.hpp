@@ -97,7 +97,7 @@ namespace Gold {
 				return iter->is_undefined();
 			    });    
 		}
-	    protected:
+	    private:
 		base_node::vec children;
 	    };
 
@@ -137,13 +137,13 @@ namespace Gold {
 		virtual ~multiply() { //Intentionally empty
 		}
 		virtual bool is_zero() const {
-		    return std::any_of(children.begin(), children.end(), [](const base_node::ptr& iter) {
+		    return std::any_of(begin(), end(), [](const base_node::ptr& iter) {
 			    return iter->is_zero();
 			});
 		}
 		virtual bool is_one() const {
 		    int negative_one_count = 0;
-		    for (auto iter = children.begin(); iter != children.end(); iter++) {
+		    for (auto iter = begin(); iter != end(); iter++) {
 			if ( (*iter)->is_minus_one() ) {
 			    negative_one_count++;
 			}
@@ -155,7 +155,7 @@ namespace Gold {
 		}
 		virtual bool is_minus_one() const {
 		    int negative_one_count = 0;
-		    for (auto iter = children.begin(); iter != children.end(); iter++) {
+		    for (auto iter = begin(); iter != end(); iter++) {
 			if ( (*iter)->is_minus_one() ) {
 			    negative_one_count++;
 			}

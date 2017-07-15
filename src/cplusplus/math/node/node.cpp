@@ -69,7 +69,6 @@ namespace Gold {
 
 	    inverse::ptr inverse::make_inverse(const base_node& denominator) {
 		inverse::ptr inverse_node = std::make_unique<inverse>();
-		inverse_node->children.reserve(2);
 		inverse_node->append( base_node::ptr(denominator.clone()) );
 		inverse_node->append( std::make_unique<integer>(-1) );
 		return inverse_node;
@@ -79,12 +78,10 @@ namespace Gold {
 		if (size() != 2) {
 		    throw invalid_node("inverse node not initialized correctly");
 		}
-		return base_node::ptr(children[0]->clone());
+		return base_node::ptr(child(0).clone());
 	    }
 	    
 	    quotient::quotient(const base_node& numerator, const base_node& denominator) {
-		children.clear();
-		children.reserve(2);
 		append( base_node::ptr(numerator.clone()) );
 		append( inverse::make_inverse(denominator) );
 	    }
@@ -105,8 +102,6 @@ namespace Gold {
 	    }
 	    
 	    rational::rational(int numerator, int denominator) {
-		    children.clear();
-		    children.reserve(2);
 		    append(std::make_unique<integer>(numerator));
 		    append(inverse::make_inverse( integer(denominator) ) );
 	    }
@@ -139,7 +134,6 @@ namespace Gold {
 	    }	
 	    
 	    power::power(const base_node& base, const base_node& exponent) {
-		children.reserve(2);
 		append( std::unique_ptr<base_node>(base.clone()));
 		append( std::unique_ptr<base_node>(exponent.clone()));
 	    }
@@ -380,11 +374,11 @@ namespace Gold {
 		base_node::ptr derivative = base_node::ptr(built_in_derivatives.at(this->get_token())->clone());
 		
 		std::map<std::string, base_node::ptr> change;
-		change.insert(std::pair<std::string, base_node::ptr>("__", base_node::ptr(this->children[0]->clone())));
+		change.insert(std::pair<std::string, base_node::ptr>("__", base_node::ptr(child(0).clone())));
 		
 		derivative = derivative->change_variables(change);
 		
-		base_node::ptr chain_derivative = this->children[0]->derivative(var);
+		base_node::ptr chain_derivative = child(0).derivative(var);
 		if ( chain_derivative->is_zero() || derivative->is_zero() ) {
 		    return std::make_unique<integer>(0);
 		}

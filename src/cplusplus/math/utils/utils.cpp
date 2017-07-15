@@ -207,10 +207,9 @@ namespace Gold {
 			} else if (*iter == '(') {
 			    parenLevel--;
 			}
-			if (parenLevel == parenSearchLevel && bracketLevel == 0) {
-			    if (*iter == key1 || *iter == key2) {
-				index = count;
-			    }
+			if ( (parenLevel == parenSearchLevel && bracketLevel == 0) && 
+			     (*iter == key1 || *iter == key2)) {
+			    index = count;
 			}
 			count--;
 		    }
@@ -248,7 +247,7 @@ namespace Gold {
 		if (index == 0) {
 		    return false;
 		}
-		char lhs = str[index-1];;
+		char lhs = str[index-1];
 		return (lhs != '+' && lhs != '-' && lhs != '*' && lhs != '/' &&
 			lhs != '^' && lhs != ',' && lhs != '(' && lhs != '[');
 	    }
@@ -263,9 +262,9 @@ namespace Gold {
 		while (index == -1 && maxParenLevel >= parenSearchLevel) {
 		    index = search(str,parenSearchLevel,'+','-');
 		    if ( index >= 0 && !is_binary(index, str)) index = -1; //Error handling of negative
-		    if (index != -1) break;
+		    if (index != -1) return index;
 		    index = search(str,parenSearchLevel,'*','/');
-		    if (index != -1) break;
+		    if (index != -1) return index;
 		    index = search(str,parenSearchLevel,'^','#');
 		    parenSearchLevel++;
 		}
@@ -320,7 +319,7 @@ namespace Gold {
 		    field_operation = "+";
 		    inverse_operation = "-";
 		}
-		else /*if (operation == "*" || operation == "/")*/ {
+		else {
 		    field_operation = "*";
 		    inverse_operation = "/";
 		}
@@ -347,7 +346,7 @@ namespace Gold {
 			    str.insert(0, "(-1)*(").append(")");
 			}
 		    }
-		    else /*if (operation == "*" || operation == "/")*/ {
+		    else {
 			if (invert) {
 			    str.insert(0, "(").append(")^(-1)");
 			}
@@ -356,8 +355,7 @@ namespace Gold {
 			}
 		    }
 		    vector.push_back(str);
-		    return;
-		} 
+		}
 	    }
       
 	}
